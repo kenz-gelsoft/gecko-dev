@@ -192,7 +192,7 @@ def audio_backends_default(target):
             "aaudio",
             "opensl",
         )
-    elif target.os in ("DragonFly", "FreeBSD", "SunOS"):
+    elif target.os in ("DragonFly", "FreeBSD", "Haiku", "SunOS"):
         return ("oss",)
     elif target.os == "OpenBSD":
         return ("sndio",)
