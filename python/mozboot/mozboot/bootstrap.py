@@ -30,6 +30,7 @@ from mozboot.opensuse import OpenSUSEBootstrapper
 from mozboot.debian import DebianBootstrapper
 from mozboot.freebsd import FreeBSDBootstrapper
 from mozboot.gentoo import GentooBootstrapper
+from mozboot.haiku import HaikuBootstrapper
 from mozboot.osx import OSXBootstrapper, OSXBootstrapperLight
 from mozboot.openbsd import OpenBSDBootstrapper
 from mozboot.archlinux import ArchlinuxBootstrapper
@@ -214,6 +215,10 @@ class Bootstrapper(object):
             cls = FreeBSDBootstrapper
             args["version"] = platform.release()
             args["flavor"] = platform.system()
+
+        elif sys.platform.startswith("haiku"):
+            cls = HaikuBootstrapper
+            args["version"] = platform.uname()[2]
 
         elif sys.platform.startswith("win32") or sys.platform.startswith("msys"):
             if "MOZILLABUILD" in os.environ:
