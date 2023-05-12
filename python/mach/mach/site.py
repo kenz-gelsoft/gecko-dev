@@ -1184,6 +1184,12 @@ def _create_venv_with_pthfile(
         ]
     )
 
+    for dir in ("bin", "lib"):
+        src = os.path.join(virtualenv_root, "non-packaged", dir)
+        dst = os.path.join(virtualenv_root, dir)
+        shutil.rmtree(dst, ignore_errors=True)
+        os.symlink(src, dst, target_is_directory=True)
+
     platlib_site_packages_dir = target_venv.resolve_sysconfig_packages_path("platlib")
     pthfile_contents = "\n".join(pthfile_lines)
     with open(os.path.join(platlib_site_packages_dir, PTH_FILENAME), "w") as f:
