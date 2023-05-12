@@ -466,7 +466,8 @@ def toolkit_gtk(toolkit):
 # ==============================================================
 wayland_headers = pkg_check_modules(
     "MOZ_WAYLAND",
-    "gtk+-wayland-3.0 >= 3.14 xkbcommon >= 0.4.1 libdrm >= 2.4",
+    #"gtk+-wayland-3.0 >= 3.14 xkbcommon >= 0.4.1 libdrm >= 2.4",
+    "gtk+-wayland-3.0 >= 3.14 xkbcommon >= 0.4.1",
     allow_missing=depends(full_toolkit)(lambda t: t == "cairo-gtk3"),
     when=toolkit_gtk,
 )
