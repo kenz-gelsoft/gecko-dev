@@ -24,15 +24,16 @@ mod codegen {
         let output = Path::new(&env::var("OUT_DIR").unwrap()).join("tokenizer.rs");
         println!("cargo:rerun-if-changed={}", input.display());
 
-        // We have stack overflows on Servo's CI.
-        let handle = Builder::new()
-            .stack_size(128 * 1024 * 1024)
-            .spawn(move || {
-                crate::match_byte::expand(&input, &output);
-            })
-            .unwrap();
-
-        handle.join().unwrap();
+        // // We have stack overflows on Servo's CI.
+        // let handle = Builder::new()
+        //     .stack_size(128 * 1024 * 1024)
+        //     .spawn(move || {
+        //         crate::match_byte::expand(&input, &output);
+        //     })
+        //     .unwrap();
+        // 
+        // handle.join().unwrap();
+        crate::match_byte::expand(&input, &output);
     }
 }
 
