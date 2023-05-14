@@ -28,6 +28,8 @@
 #  define OS_DRAGONFLY 1
 #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 #  define OS_FREEBSD 1
+#elif defined(__HAIKU__)
+#  define OS_HAIKU 1
 #elif defined(__NetBSD__)
 #  define OS_NETBSD 1
 #elif defined(__OpenBSD__)
@@ -50,7 +52,7 @@
 // For access to standard POSIX features, use OS_POSIX instead of a more
 // specific macro.
 #if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_BSD) || \
-    defined(OS_SOLARIS)
+    defined(OS_SOLARIS) || defined(OS_HAIKU)
 #  define OS_POSIX 1
 #endif
 
