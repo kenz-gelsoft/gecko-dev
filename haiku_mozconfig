@@ -1,4 +1,5 @@
 ac_add_options --enable-default-toolkit=cairo-gtk3-wayland-only
+ac_add_options --disable-audio-backends
 ac_add_options --disable-jit
 ac_add_options --disable-tests
 ac_add_options --with-system-nspr
