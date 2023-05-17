@@ -835,6 +835,7 @@ void nsClipboard::SelectionGetEvent(GtkClipboard* aClipboard,
       return;
     }
 
+#ifndef __HAIKU__
     RefPtr<GdkPixbuf> pixbuf = nsImageToPixbuf::ImageToPixbuf(image);
     if (!pixbuf) {
       LOGCLIP("    nsImageToPixbuf::ImageToPixbuf() failed!\n");
@@ -845,6 +846,7 @@ void nsClipboard::SelectionGetEvent(GtkClipboard* aClipboard,
             GUniquePtr<gchar>(gdk_atom_name(selectionTarget)).get());
     gtk_selection_data_set_pixbuf(aSelectionData, pixbuf);
     return;
+#endif
   }
 
   if (selectionTarget == gdk_atom_intern(kHTMLMime, FALSE)) {

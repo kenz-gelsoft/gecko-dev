@@ -18,7 +18,9 @@
 #include <sys/time.h>
 #include <dlfcn.h>
 #include <sys/mman.h>
-#include <sys/eventfd.h>
+#ifndef __HAIKU__
+#  include <sys/eventfd.h>
+#endif
 #include <poll.h>
 #include <sys/ioctl.h>
 
@@ -94,7 +96,11 @@ void DMABufSurface::GlobalRefAdd() {
 
 void DMABufSurface::GlobalRefCountCreate() {
   MOZ_ASSERT(!mGlobalRefCountFd);
+#ifdef __HAIKU__
+  mGlobalRefCountFd = -1; // TODO
+#else
   mGlobalRefCountFd = eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK | EFD_SEMAPHORE);
+#endif
   if (mGlobalRefCountFd < 0) {
     NS_WARNING(nsPrintfCString("Failed to create dmabuf global ref count: %s",
                                strerror(errno))
@@ -661,7 +667,11 @@ static void SyncDmaBuf(int aFd, uint64_t aFlags) {
   sync.flags = aFlags | DMA_BUF_SYNC_READ | DMA_BUF_SYNC_WRITE;
   while (true) {
     int ret;
+#ifdef __HAIKU__
+    ret = -1; // TODO
+#else
     ret = ioctl(aFd, DMA_BUF_IOCTL_SYNC, &sync);
+#endif
     if (ret == -1 && errno == EINTR) {
       continue;
     } else if (ret == -1) {
