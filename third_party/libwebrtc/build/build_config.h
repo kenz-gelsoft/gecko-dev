@@ -74,6 +74,8 @@
 #define OS_FUCHSIA 1
 #elif defined(__FreeBSD__)
 #define OS_FREEBSD 1
+#elif defined(__HAIKU__)
+#define OS_HAIKU 1
 #elif defined(__NetBSD__)
 #define OS_NETBSD 1
 #elif defined(__OpenBSD__)
@@ -108,7 +110,7 @@
     defined(OS_FREEBSD) || defined(OS_IOS) || defined(OS_LINUX) ||  \
     defined(OS_CHROMEOS) || defined(OS_MAC) || defined(OS_NACL) ||  \
     defined(OS_NETBSD) || defined(OS_OPENBSD) || defined(OS_QNX) || \
-    defined(OS_SOLARIS)
+    defined(OS_SOLARIS) || defined(OS_HAIKU)
 #define OS_POSIX 1
 #endif
 
