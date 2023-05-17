@@ -40,6 +40,9 @@ else:
     elif CONFIG['OS_ARCH'] == 'SunOS':
         DEFINES['OS_SOLARIS'] = 1
 
+    elif CONFIG['OS_ARCH'] == 'Haiku':
+        DEFINES['OS_HAIKU'] = 1
+
     elif CONFIG['OS_ARCH'] == 'DragonFly':
         DEFINES['OS_DRAGONFLY'] = 1
         DEFINES['OS_BSD'] = 1
