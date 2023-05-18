@@ -18,7 +18,9 @@
 #include "mozilla/FilePreferences.h"
 #include "prtime.h"
 
-#include <sys/fcntl.h>
+#ifndef __HAIKU__
+#  include <sys/fcntl.h>
+#endif
 #include <sys/select.h>
 #include <sys/stat.h>
 #include <sys/time.h>

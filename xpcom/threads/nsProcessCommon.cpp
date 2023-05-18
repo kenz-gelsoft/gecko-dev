@@ -44,7 +44,9 @@
 #      include "base/process_util.h"
 #    endif
 #    include <sys/wait.h>
-#    include <sys/errno.h>
+#    ifndef __HAIKU__
+#      include <sys/errno.h>
+#    endif
 #  endif
 #  include <sys/types.h>
 #  include <signal.h>
