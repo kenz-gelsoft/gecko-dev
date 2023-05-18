@@ -27,6 +27,10 @@
 #  include <wincrypt.h>
 #endif  // XP_WIN
 
+#ifdef __HAIKU__
+#  define MOZ_NO_SMART_CARDS 1
+#endif
+
 class nsIDOMWindow;
 class nsIPrompt;
 class nsISerialEventTarget;
