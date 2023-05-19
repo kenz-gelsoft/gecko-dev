@@ -110,3 +110,7 @@ LOCAL_INCLUDES += [
 ]
 
 USE_LIBS += ["icu"]
+
+OS_LIBS += [
+    "network"
+]
