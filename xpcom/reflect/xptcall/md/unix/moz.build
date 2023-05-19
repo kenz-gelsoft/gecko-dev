@@ -35,6 +35,7 @@ if (
         "Bitrig",
         "DragonFly",
         "FreeBSD",
+        "Haiku",
         "NetBSD",
         "OpenBSD",
         "SunOS",
