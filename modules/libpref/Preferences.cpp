@@ -5668,9 +5668,11 @@ static void RegisterOncePrefs(SharedPrefMapBuilder& aBuilder) {
 }
 
 static void InitStaticPrefsFromShared() {
+#ifndef __HAIKU__
   MOZ_ASSERT(!XRE_IsParentProcess());
   MOZ_DIAGNOSTIC_ASSERT(gSharedMap,
                         "Must be called once gSharedMap has been created");
+#endif
 
   // For mirrored static prefs we generate some initialization code. Each
   // mirror variable is already initialized in the binary with the default
@@ -5692,6 +5694,28 @@ static void InitStaticPrefsFromShared() {
   // Nonetheless, it's useful to have the MOZ_ASSERT here for testing of debug
   // builds, where this scenario involving inconsistent binaries should not
   // occur.
+#ifdef __HAIKU__
+#define NEVER_PREF(name, cpp_type, default_value)
+#define ALWAYS_PREF(name, base_id, full_id, cpp_type, default_value)           \
+  {                                                                            \
+    StripAtomic<cpp_type> val;                                                 \
+    if (!XRE_IsParentProcess() && IsString<cpp_type>::value &&                 \
+        sCrashOnBlocklistedPref) {                                             \
+    }                                                                          \
+    DebugOnly<nsresult> rv = Internals::GetSharedPrefValue(name, &val);        \
+    StaticPrefs::sMirror_##full_id = val;                                      \
+  }
+#define ONCE_PREF(name, base_id, full_id, cpp_type, default_value)             \
+  {                                                                            \
+    cpp_type val;                                                              \
+    if (!XRE_IsParentProcess() && IsString<cpp_type>::value &&                 \
+        sCrashOnBlocklistedPref) {                                             \
+    }                                                                          \
+    DebugOnly<nsresult> rv =                                                   \
+        Internals::GetSharedPrefValue(ONCE_PREF_NAME(name), &val);             \
+    StaticPrefs::sMirror_##full_id = val;                                      \
+  }
+#else  // __HAIKU__
 #define NEVER_PREF(name, cpp_type, default_value)
 #define ALWAYS_PREF(name, base_id, full_id, cpp_type, default_value)           \
   {                                                                            \
@@ -5720,6 +5744,7 @@ static void InitStaticPrefsFromShared() {
     MOZ_ASSERT(NS_SUCCEEDED(rv), "Failed accessing " name);                    \
     StaticPrefs::sMirror_##full_id = val;                                      \
   }
+#endif // __HAIKU__
 #include "mozilla/StaticPrefListAll.h"
 #undef NEVER_PREF
 #undef ALWAYS_PREF
