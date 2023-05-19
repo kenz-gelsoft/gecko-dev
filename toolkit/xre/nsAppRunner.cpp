@@ -3821,7 +3821,7 @@ class XREMain {
 #endif
 };
 
-#if defined(XP_UNIX) && !defined(ANDROID)
+#if defined(XP_UNIX) && !defined(ANDROID) && !defined(__HAIKU__)
 static SmprintfPointer FormatUid(uid_t aId) {
   if (const auto pw = getpwuid(aId)) {
     return mozilla::Smprintf("%s", pw->pw_name);
@@ -3870,7 +3870,7 @@ static bool CheckForUserMismatch() {
   }
   return false;
 }
-#else  // !XP_UNIX || ANDROID
+#else  // !XP_UNIX || ANDROID || __HAIKU__
 static bool CheckForUserMismatch() { return false; }
 #endif
 
