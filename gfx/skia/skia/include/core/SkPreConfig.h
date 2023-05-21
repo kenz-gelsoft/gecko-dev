@@ -31,7 +31,7 @@
         #define SK_BUILD_FOR_ANDROID
     #elif defined(linux) || defined(__linux) || defined(__FreeBSD__) || \
           defined(__OpenBSD__) || defined(__sun) || defined(__NetBSD__) || \
-          defined(__DragonFly__) || defined(__Fuchsia__) || \
+          defined(__DragonFly__) || defined(__Fuchsia__) || defined(__HAIKU__) || \
           defined(__GLIBC__) || defined(__GNU__) || defined(__unix__)
         #define SK_BUILD_FOR_UNIX
     #elif TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
