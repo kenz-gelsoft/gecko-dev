@@ -102,6 +102,9 @@ GeneratedFile(
     "etld_data.inc", script="prepare_tlds.py", inputs=["effective_tld_names.dat"]
 )
 
+if CONFIG["MOZ_SYSTEM_HARFBUZZ"]:
+    CXXFLAGS += CONFIG["MOZ_HARFBUZZ_CFLAGS"]
+
 # need to include etld_data.inc
 LOCAL_INCLUDES += [
     "/netwerk/base",

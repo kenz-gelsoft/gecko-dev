@@ -21,3 +21,8 @@ from within the gfx/harfbuzz directory.
 
 If the collection of source files changes, manual updates to moz.build may be
 needed as we don't use the upstream makefiles.
+
+The in-tree copy may be omitted during build by --with-system-harfbuzz.
+Make sure to keep pkg-config version check within toolkit/moz.configure in sync
+with checkout version or increment latest tag by one if it's not based
+on upstream release.

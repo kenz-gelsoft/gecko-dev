@@ -1293,6 +1293,19 @@ if CONFIG['MOZ_ENABLE_LIBPROXY']:
         'proxy.h',
     ]
 
+if CONFIG['MOZ_SYSTEM_GRAPHITE2']:
+    system_headers += [
+        'graphite2/Font.h',
+        'graphite2/Segment.h',
+    ]
+
+if CONFIG['MOZ_SYSTEM_HARFBUZZ']:
+    system_headers += [
+        'harfbuzz/hb-glib.h',
+        'harfbuzz/hb-ot.h',
+        'harfbuzz/hb.h',
+    ]
+
 if CONFIG['MOZ_SYSTEM_LIBVPX']:
     system_headers += [
         'vpx_mem/vpx_mem.h',
