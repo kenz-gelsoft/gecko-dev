@@ -18,7 +18,7 @@ class HaikuBootstrapper(BaseBootstrapper):
         self.browser_packages = [
             "dbus_glib_devel",
             "gtk3_devel",
-            "llvm12",
+            #"llvm12",
             "nasm",
             "nodejs16",
         ]
