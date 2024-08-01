@@ -4013,7 +4013,7 @@ int XREMain::XRE_mainInit(bool* aExitFlag) {
 
   mozilla::startup::IncreaseDescriptorLimits();
 
-#ifdef USE_GLX_TEST
+#if defined(USE_GLX_TEST) && !defined(__HAIKU__)
   // bug 639842 - it's very important to fire this process BEFORE we set up
   // error handling. indeed, this process is expected to be crashy, and we
   // don't want the user to see its crashes. That's the whole reason for

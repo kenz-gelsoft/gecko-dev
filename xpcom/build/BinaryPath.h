@@ -142,7 +142,7 @@ class BinaryPath {
       return NS_ERROR_FAILURE;
     }
 
-    snprintf(aResult, MAXPATHLEN, "%s/%s", libDir, "dummy");
+    snprintf(aResult, MAXPATHLEN, "%s/%s", libDir, "firefox");
     aResult[MAXPATHLEN - 1] = '\0';
     return NS_OK;
   }

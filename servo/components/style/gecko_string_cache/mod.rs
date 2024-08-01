@@ -86,7 +86,7 @@ fn valid_static_atom_addr(addr: usize) -> bool {
     unsafe {
         let atoms = static_atoms();
         let start = atoms.as_ptr();
-        let end = atoms.get_unchecked(STATIC_ATOM_COUNT) as *const _;
+        let end = atoms.get_unchecked(STATIC_ATOM_COUNT - 1) as *const _;
         let in_range = addr >= start as usize && addr < end as usize;
         let aligned = addr % mem::align_of::<nsStaticAtom>() == 0;
         in_range && aligned

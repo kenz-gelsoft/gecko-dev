@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
   char path[PATH_MAX + 4];
   ssize_t len = readlink("/proc/self/exe", path, PATH_MAX - 1);
   if (len < 0) {
-    fprintf(stderr, "Couldn't find the application directory.\n");
+    fprintf(stderr, "Couldn't find the application directory 1.\n");
     return 255;
   }
   strcpy(path + len, "-bin");

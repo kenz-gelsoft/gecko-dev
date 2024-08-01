@@ -234,7 +234,7 @@ static nsresult InitXPCOMGlue(LibLoadingStrategy aLibLoadingStrategy) {
 
   UniqueFreePtr<char> exePath = BinaryPath::Get();
   if (!exePath) {
-    Output("Couldn't find the application directory.\n");
+    Output("Couldn't find the application directory 2.\n");
     return NS_ERROR_FAILURE;
   }
 

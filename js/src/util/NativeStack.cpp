@@ -34,6 +34,9 @@
 #else
 #  error "Unsupported platform"
 #endif
+#ifdef __HAIKU__
+#  include <OS.h>
+#endif
 
 #include "js/friend/StackLimits.h"  // JS_STACK_GROWTH_DIRECTION
 
@@ -119,10 +122,10 @@ void* js::GetNativeStackBaseImpl() {
 
 #elif defined(__HAIKU__)
 
-// TODO: stubbed out...
 void* js::GetNativeStackBaseImpl() {
-    MOZ_CRASH("js::GetNativeStackBaseImpl() is not implemented");
-    return NULL;
+    thread_info info;
+    get_thread_info(find_thread(NULL), &info);
+    return info.stack_end;
 }
 
 #elif defined(__wasi__)

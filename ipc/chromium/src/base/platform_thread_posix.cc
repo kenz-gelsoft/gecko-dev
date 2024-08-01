@@ -16,6 +16,8 @@
 #elif defined(OS_LINUX)
 #  include <sys/syscall.h>
 #  include <sys/prctl.h>
+#elif defined(__HAIKU__)
+#  include <OS.h>
 #endif
 
 #if !defined(OS_MACOSX)
@@ -59,6 +61,8 @@ PlatformThreadId PlatformThread::CurrentId() {
   return lwp_gettid();
 #elif defined(OS_FREEBSD)
   return pthread_getthreadid_np();
+#elif defined(__HAIKU__)
+  return find_thread(NULL);
 #endif
 }
 
@@ -103,6 +107,7 @@ namespace {
 bool CreateThread(size_t stack_size, bool joinable,
                   PlatformThread::Delegate* delegate,
                   PlatformThreadHandle* thread_handle) {
+  fprintf(stderr, "CreateThread(%p)\n", delegate);
 #if defined(OS_MACOSX)
   base::InitThreading();
 #endif  // OS_MACOSX
