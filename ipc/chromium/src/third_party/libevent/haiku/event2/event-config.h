@@ -29,10 +29,10 @@
 /* Define to 1 if you have the <afunix.h> header file. */
 /* #undef EVENT__HAVE_AFUNIX_H 1 */
 
-#ifdef HAVE_ARC4RANDOM
+/* #ifdef HAVE_ARC4RANDOM */
 /* Define to 1 if you have the `arc4random' function. */
 #define EVENT__HAVE_ARC4RANDOM 1
-#endif
+/* #endif */
 
 /* Define to 1 if you have the `arc4random_addrandom' function. */
 /* #undef EVENT__HAVE_ARC4RANDOM_ADDRANDOM */
