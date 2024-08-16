@@ -8,6 +8,10 @@
 #include "prprf.h"
 #include "prlong.h"
 
+#if defined(BEOS)
+#include <kernel/OS.h>
+#endif
+
 #if defined(OS2)
 #define INCL_DOS
 #define INCL_DOSMISC
@@ -198,6 +202,11 @@ PR_IMPLEMENT(PRInt32) PR_GetNumberOfProcessors( void )
 
     GetSystemInfo( &info );
     numCpus = info.dwNumberOfProcessors;
+#elif defined(BEOS)
+    system_info sysInfo;
+
+    get_system_info(&sysInfo);
+    numCpus = sysInfo.cpu_count;
 #elif defined(OS2)
     DosQuerySysInfo( QSV_NUMPROCESSORS, QSV_NUMPROCESSORS, &numCpus, sizeof(numCpus));
 #elif defined(_PR_HAVE_SYSCTL)

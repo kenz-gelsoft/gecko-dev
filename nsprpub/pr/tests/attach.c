@@ -47,6 +47,8 @@
 #define INCL_ERRORS
 #include <os2.h>
 #include <process.h>
+#elif defined(XP_BEOS)
+#include <kernel/OS.h>
 #endif
 
 #define DEFAULT_COUNT 1000
@@ -97,6 +99,8 @@ static void Measure(void (*func)(void), const char *msg)
 
 #ifdef WIN32
 static unsigned __stdcall threadStartFunc(void *arg)
+#elif defined(XP_BEOS)
+static int32 threadStartFunc(void *arg)
 #else
 static void * threadStartFunc(void *arg)
 #endif
@@ -122,6 +126,10 @@ int main(int argc, char **argv)
 #elif defined(OS2)
     int rv;
     TID threadID;
+#elif defined(XP_BEOS)
+	thread_id threadID;
+	int32 threadRV;
+	status_t waitRV;
 #endif
 
     /* The command line argument: -d is used to determine if the test is being run
@@ -278,6 +286,28 @@ int main(int argc, char **argv)
         goto exit_now;
     }
 
+#elif defined(XP_BEOS)
+	
+	threadID = spawn_thread(threadStartFunc, NULL, B_NORMAL_PRIORITY, NULL);
+	if (threadID <= B_ERROR) {
+		fprintf(stderr, "thread creation failed: error code %08lx\n", threadID);
+		failed_already = 1;
+		goto exit_now;
+	}
+	if (resume_thread(threadID) != B_OK) {
+		fprintf(stderr, "failed starting thread: error code %08lx\n", threadID);
+		failed_already = 1;
+		goto exit_now;
+	}
+
+	waitRV = wait_for_thread(threadID, &threadRV);
+	if (debug_mode)
+		PR_ASSERT(waitRV == B_OK);
+	else if (waitRV != B_OK) {
+		failed_already = 1;
+		goto exit_now;
+	}
+	
 #else
     if (!debug_mode) {
         failed_already=1;

@@ -649,14 +649,14 @@ static PRInt32 PR_CALLBACK DirTest(void *arg)
         }
         PR_Close(fd_file);
     }
-#if defined(XP_UNIX) || (defined(XP_PC) && defined(WIN32)) || defined(XP_OS2)
+#if defined(XP_UNIX) || (defined(XP_PC) && defined(WIN32)) || defined(XP_OS2) || defined(XP_BEOS)
     /*
      * Create a hidden file - a platform-dependent operation
      */
     strcpy(pathname, TEST_DIR);
     strcat(pathname, "/");
     strcat(pathname, HIDDEN_FILE_NAME);
-#if defined(XP_UNIX)
+#if defined(XP_UNIX) || defined(XP_BEOS)
     DPRINTF(("Creating hidden test file %s\n",pathname));
     fd_file = PR_Open(pathname, PR_RDWR | PR_CREATE_FILE, 0777);
 
@@ -734,7 +734,7 @@ static PRInt32 PR_CALLBACK DirTest(void *arg)
      * List all files, including hidden files
      */
     DPRINTF(("Listing all files in directory %s\n",TEST_DIR));
-#if defined(XP_UNIX) || (defined(XP_PC) && defined(WIN32)) || defined(XP_OS2)
+#if defined(XP_UNIX) || (defined(XP_PC) && defined(WIN32)) || defined(XP_OS2) || defined(XP_BEOS)
     num_files = FILES_IN_DIR + 1;
 #else
     num_files = FILES_IN_DIR;
@@ -770,7 +770,7 @@ static PRInt32 PR_CALLBACK DirTest(void *arg)
 
     PR_CloseDir(fd_dir);
 
-#if defined(XP_UNIX) || (defined(XP_PC) && defined(WIN32)) || defined(XP_OS2)
+#if defined(XP_UNIX) || (defined(XP_PC) && defined(WIN32)) || defined(XP_OS2) || defined(XP_BEOS)
 
     /*
      * List all files, except hidden files

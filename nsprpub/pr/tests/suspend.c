@@ -3,6 +3,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#ifdef XP_BEOS
+#include <stdio.h>
+int main()
+{
+    printf( "This test is not ported to the BeOS\n" );
+    return 0;
+}
+#else
+
 #include "nspr.h"
 #include "prpriv.h"
 #include "prinrval.h"
@@ -175,3 +184,4 @@ int main(int argc, char **argv)
     return 0;
 }
 
+#endif /* XP_BEOS */

@@ -3056,6 +3056,9 @@ if test -n "$MOZ_DEBUG"; then
     DEFINES="$DEFINES -UNDEBUG"
 
     case "${target_os}" in
+    beos*)
+        DEFINES="$DEFINES -DDEBUG_${USER}"
+        ;;
     mks*|cygwin*|mingw*|msys*|os2*)
         DEFINES="$DEFINES -DDEBUG_`echo ${USERNAME} | sed -e 's| |_|g'`"
         ;;
@@ -5983,6 +5986,9 @@ case "$host" in
         CYGWIN_WRAPPER='sh $(topsrcdir)/build/cygwin-wrapper'
     fi
     ;;
+*-beos*)
+    HOST_CFLAGS="$HOST_CFLAGS -DXP_BEOS -DBeOS -DBEOS -D_POSIX_SOURCE"
+    ;;
 *os2*)
     ;;
 *)
@@ -6336,6 +6342,77 @@ fi
     fi
     PR_MD_CSRCS=aix.c
     RESOLVE_LINK_SYMBOLS=1
+    ;;
+
+*-beos*)
+    $as_echo "#define XP_BEOS 1" >>confdefs.h
+
+    $as_echo "#define BeOS 1" >>confdefs.h
+
+    $as_echo "#define BEOS 1" >>confdefs.h
+
+    $as_echo "#define _POSIX_SOURCE 1" >>confdefs.h
+
+    DSO_LDOPTS=-nostart
+    MDCPUCFG_H=_beos.cfg
+    USE_BTHREADS=1
+    PR_MD_ARCH_DIR=beos
+    RESOLVE_LINK_SYMBOLS=1
+    case "${target_cpu}" in
+    i*86)
+        _OPTIMIZE_FLAGS=-O2
+        _DEBUG_FLAGS='-gdwarf-2 -O0'
+        MKSHLIB='$(CCC) $(DSO_LDOPTS) -o $@'
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gethostbyaddr in -lbind" >&5
+$as_echo_n "checking for gethostbyaddr in -lbind... " >&6; }
+if ${ac_cv_lib_bind_gethostbyaddr+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lbind  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char gethostbyaddr ();
+int
+main ()
+{
+return gethostbyaddr ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_bind_gethostbyaddr=yes
+else
+  ac_cv_lib_bind_gethostbyaddr=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_bind_gethostbyaddr" >&5
+$as_echo "$ac_cv_lib_bind_gethostbyaddr" >&6; }
+if test "x$ac_cv_lib_bind_gethostbyaddr" = xyes; then :
+  OS_LIBS="$OS_LIBS -lbind -lsocket"
+fi
+
+        ;;
+    powerpc)
+        CC=mwcc
+        CCC=mwcc
+        LD=mwld
+        DSO_LDOPTS='-xms -export pragma -init _init_routine_ -term _term_routine_ -lroot -lnet /boot/develop/lib/ppc/glue-noinit.a /boot/develop/lib/ppc/init_term_dyn.o /boot/develop/lib/ppc/start_dyn.o'
+        _OPTIMIZE_FLAGS=-O2
+        _DEBUG_FLAGS='-g -O0'
+        ;;
+    esac
     ;;
 
 *-bsdi*)
@@ -7460,7 +7537,7 @@ if test -z "$SKIP_LIBRARY_CHECKS"; then
 
 
 case $target in
-*-darwin*|*-os2*)
+*-darwin*|*-beos*|*-os2*)
     ;;
 *)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlopen in -ldl" >&5
@@ -7913,6 +7990,21 @@ if test "${enable_nspr_threads+set}" = set; then :
 fi
 
 
+case "$target" in
+*-beos*)
+
+# Check whether --with-bthreads was given.
+if test "${with_bthreads+set}" = set; then :
+  withval=$with_bthreads; 	if test "$withval" = "yes"; then
+    	    USE_BTHREADS=1
+	        USE_USER_PTHREADS=
+	        USE_PTHREADS=
+	    fi
+fi
+
+    ;;
+esac
+
 fi # SKIP_LIBRARY_CHECKS
 
 # Check whether --enable-ipv6 was given.
@@ -8096,7 +8188,7 @@ _ACEOF
 
     fi
     ;;
-*-mingw*|*-msys*|*-cygwin*|*-mks*|*-os2*)
+*-mingw*|*-msys*|*-cygwin*|*-mks*|*-os2*|*-beos*)
         USE_PTHREADS=
     _PTHREAD_LDFLAGS=
     USE_USER_PTHREADS=

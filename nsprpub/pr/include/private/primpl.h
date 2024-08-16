@@ -10,6 +10,10 @@
 #include <pthread.h>
 #endif
 
+#if defined(_PR_BTHREADS)
+#include <kernel/OS.h>
+#endif
+
 #ifdef WIN32
 /*
  * Allow use of functions and symbols first defined in Win2k.
@@ -2131,6 +2135,23 @@ extern PRSize _PR_MD_GetRandomNoise( void *buf, PRSize size );
 extern PRSize _pr_CopyLowBits( void *dest, PRSize dstlen, void *src, PRSize srclen );
 
 /* end PR_GetRandomNoise() related */
+
+#ifdef XP_BEOS
+
+extern PRLock *_connectLock;
+
+typedef struct _ConnectListNode {
+	PRInt32		osfd;
+	PRNetAddr	addr;
+	PRUint32	addrlen;
+	PRIntervalTime	timeout;
+} ConnectListNode;
+
+extern ConnectListNode connectList[64];
+
+extern PRUint32 connectCount;
+
+#endif /* XP_BEOS */
 
 #if defined(_WIN64) && defined(WIN95)
 typedef struct _PRFileDescList {

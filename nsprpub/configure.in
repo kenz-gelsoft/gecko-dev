@@ -494,6 +494,9 @@ if test -n "$MOZ_DEBUG"; then
     DEFINES="$DEFINES -UNDEBUG"
 
     case "${target_os}" in
+    beos*)
+        DEFINES="$DEFINES -DDEBUG_${USER}"
+        ;;
     mks*|cygwin*|mingw*|msys*|os2*)
         DEFINES="$DEFINES -DDEBUG_`echo ${USERNAME} | sed -e 's| |_|g'`"
         ;;
@@ -1164,6 +1167,9 @@ case "$host" in
         CYGWIN_WRAPPER='sh $(topsrcdir)/build/cygwin-wrapper'
     fi
     ;;
+*-beos*)
+    HOST_CFLAGS="$HOST_CFLAGS -DXP_BEOS -DBeOS -DBEOS -D_POSIX_SOURCE"
+    ;;
 *os2*)
     ;;
 *)
@@ -1236,6 +1242,34 @@ case "$target" in
     RESOLVE_LINK_SYMBOLS=1
     ;;
         
+*-beos*)
+    AC_DEFINE(XP_BEOS)
+    AC_DEFINE(BeOS)
+    AC_DEFINE(BEOS)
+    AC_DEFINE(_POSIX_SOURCE)
+    DSO_LDOPTS=-nostart
+    MDCPUCFG_H=_beos.cfg
+    USE_BTHREADS=1
+    PR_MD_ARCH_DIR=beos
+    RESOLVE_LINK_SYMBOLS=1
+    case "${target_cpu}" in
+    i*86)
+        _OPTIMIZE_FLAGS=-O2
+        _DEBUG_FLAGS='-gdwarf-2 -O0'
+        MKSHLIB='$(CCC) $(DSO_LDOPTS) -o $@'
+        AC_CHECK_LIB(bind, gethostbyaddr, [OS_LIBS="$OS_LIBS -lbind -lsocket"])
+        ;;
+    powerpc)
+        CC=mwcc
+        CCC=mwcc
+        LD=mwld
+        DSO_LDOPTS='-xms -export pragma -init _init_routine_ -term _term_routine_ -lroot -lnet /boot/develop/lib/ppc/glue-noinit.a /boot/develop/lib/ppc/init_term_dyn.o /boot/develop/lib/ppc/start_dyn.o'
+        _OPTIMIZE_FLAGS=-O2    
+        _DEBUG_FLAGS='-g -O0'
+        ;;
+    esac
+    ;;
+
 *-bsdi*)
     AC_DEFINE(XP_UNIX)
     AC_DEFINE(BSDI)
@@ -2267,7 +2301,7 @@ dnl The same goes for BeOS.
 dnl OS/2 has dlfcn in libc.
 
 case $target in
-*-darwin*|*-os2*)
+*-darwin*|*-beos*|*-os2*)
     ;;
 *)
     AC_CHECK_LIB(dl, dlopen,
@@ -2433,6 +2467,19 @@ AC_ARG_ENABLE(nspr-threads,
 	    USE_NSPR_THREADS=1
 	  fi])
 
+case "$target" in
+*-beos*)
+    AC_ARG_WITH(bthreads,
+    [  --with-bthreads         Use system bthreads library as thread subsystem
+                          (BeOS only)],
+    [	if test "$withval" = "yes"; then
+    	    USE_BTHREADS=1
+	        USE_USER_PTHREADS=
+	        USE_PTHREADS=
+	    fi])
+    ;;
+esac
+
 fi # SKIP_LIBRARY_CHECKS
 
 AC_ARG_ENABLE(ipv6,
@@ -2595,8 +2642,8 @@ case "$target" in
         AC_DEFINE(_PR_LOCAL_THREADS_ONLY)
     fi
     ;;
-*-mingw*|*-msys*|*-cygwin*|*-mks*|*-os2*)
-    dnl win32, os2 cannot use pthreads
+*-mingw*|*-msys*|*-cygwin*|*-mks*|*-os2*|*-beos*)
+    dnl win32, os2 & beos cannot use pthreads
     USE_PTHREADS=
     _PTHREAD_LDFLAGS=
     USE_USER_PTHREADS=

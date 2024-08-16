@@ -57,6 +57,12 @@ PRLock *_pr_dnsLock = NULL;
  * Some return a pointer to struct protoent, others return
  * an int, and glibc's flavor takes five arguments.
  */
+#if defined(XP_BEOS) && defined(BONE_VERSION)
+#include <arpa/inet.h>  /* pick up define for inet_addr */
+#include <sys/socket.h>
+#define _PR_HAVE_GETPROTO_R
+#define _PR_HAVE_GETPROTO_R_POINTER
+#endif
 
 #if defined(SOLARIS) || (defined(BSDI) && defined(_REENTRANT)) \
     || (defined(LINUX) && defined(_REENTRANT) \
@@ -79,7 +85,7 @@ PRLock *_pr_dnsLock = NULL;
 #endif
 
 /* BeOS has glibc but not the glibc-style getprotobyxxx_r functions. */
-#if (defined(__GLIBC__) && __GLIBC__ >= 2)
+#if (defined(__GLIBC__) && __GLIBC__ >= 2 && !defined(XP_BEOS))
 #define _PR_HAVE_GETPROTO_R
 #define _PR_HAVE_5_ARG_GETPROTO_R
 #endif
