@@ -122,7 +122,11 @@ int main(int argc, char **argv)
 #define NSPR_LIB "nspr4"
 #endif
         const PRVersionDescription *version_info;
+#ifdef __HAIKU__
+        char *nspr_path = PR_GetEnv("LIBRARY_PATH");
+#else
         char *nspr_path = PR_GetEnv("LD_LIBRARY_PATH");
+#endif
         char *nspr_name = PR_GetLibraryName(nspr_path, NSPR_LIB);
         PRLibrary *runtime = PR_LoadLibrary(nspr_name);
         if (NULL == runtime) {

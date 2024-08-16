@@ -9,6 +9,9 @@
  * possible time. The NSPR API is implemented and documented using
  * the new definitions.
  */
+#if defined(__HAIKU__)
+#include <SupportDefs.h>
+#endif
 
 #if !defined(PROTYPES_H)
 #define PROTYPES_H
@@ -43,7 +46,7 @@ typedef PRIntn intn;
  *
  * On OS/2, sys/types.h defines uint.
  */
-#if defined(XP_UNIX) || defined(XP_OS2)
+#if defined(XP_UNIX) || defined(XP_OS2) || defined(__HAIKU__)
 #include <sys/types.h>
 #endif
 
@@ -56,7 +59,7 @@ typedef PRIntn intn;
  * uint
  */
 
-#if !defined(XP_BEOS) && !defined(XP_OS2) && !defined(XP_UNIX) || defined(NTO)
+#if !defined(XP_BEOS) && !defined(XP_OS2) && !defined(XP_UNIX) && !defined(__HAIKU__) || defined(NTO)
 typedef PRUintn uint;
 #endif
 
@@ -64,7 +67,7 @@ typedef PRUintn uint;
  * uint64
  */
 
-#if !defined(XP_BEOS)
+#if !defined(__HAIKU__)
 typedef PRUint64 uint64;
 #endif
 
@@ -73,7 +76,7 @@ typedef PRUint64 uint64;
  */
 
 #if !defined(XP_BEOS)
-#if !defined(_WIN32) && !defined(XP_OS2) && !defined(NTO)
+#if !defined(_WIN32) && !defined(XP_OS2) && !defined(NTO) && defined(__HAIKU__)
 typedef PRUint32 uint32;
 #else
 typedef unsigned long uint32;
@@ -84,7 +87,7 @@ typedef unsigned long uint32;
  * uint16
  */
 
-#if !defined(XP_BEOS)
+#if !defined(__HAIKU__)
 typedef PRUint16 uint16;
 #endif
 
@@ -92,7 +95,7 @@ typedef PRUint16 uint16;
  * uint8
  */
 
-#if !defined(XP_BEOS)
+#if !defined(__HAIKU__)
 typedef PRUint8 uint8;
 #endif
 
@@ -100,7 +103,7 @@ typedef PRUint8 uint8;
  * int64
  */
 
-#if !defined(XP_BEOS) && !defined(_PR_AIX_HAVE_BSD_INT_TYPES)
+#if !defined(XP_BEOS) && !defined(_PR_AIX_HAVE_BSD_INT_TYPES) && !defined(__HAIKU__)
 typedef PRInt64 int64;
 #endif
 
@@ -109,7 +112,7 @@ typedef PRInt64 int64;
  */
 
 #if !defined(XP_BEOS) && !defined(_PR_AIX_HAVE_BSD_INT_TYPES) \
-    && !defined(HPUX)
+    && !defined(HPUX) && !defined(__HAIKU__)
 #if !defined(_WIN32) && !defined(XP_OS2) && !defined(NTO)
 typedef PRInt32 int32;
 #else
@@ -122,7 +125,7 @@ typedef long int32;
  */
 
 #if !defined(XP_BEOS) && !defined(_PR_AIX_HAVE_BSD_INT_TYPES) \
-    && !defined(HPUX)
+    && !defined(HPUX) && !defined(__HAIKU__)
 typedef PRInt16 int16;
 #endif
 
@@ -131,7 +134,7 @@ typedef PRInt16 int16;
  */
 
 #if !defined(XP_BEOS) && !defined(_PR_AIX_HAVE_BSD_INT_TYPES) \
-    && !defined(HPUX)
+    && !defined(HPUX) && !defined(__HAIKU__)
 typedef PRInt8 int8;
 #endif
 

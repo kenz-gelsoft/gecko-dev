@@ -25,12 +25,14 @@ PRWord *_MD_HomeGCRegisters(PRThread *t, int isCurrent, int *np)
 
 #ifdef _PR_PTHREADS
 
+#ifndef HAIKU
 extern void _MD_unix_terminate_waitpid_daemon(void);
 
 void _MD_CleanupBeforeExit(void)
 {
     _MD_unix_terminate_waitpid_daemon();
 }
+#endif
 
 #else /* ! _PR_PTHREADS */
 

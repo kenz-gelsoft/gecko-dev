@@ -1522,6 +1522,30 @@ tools are selected during the Xcode/Developer Tools installation.])
     PR_MD_CSRCS=freebsd.c
     ;;
 
+*-haiku*)
+    AC_DEFINE(XP_UNIX)
+    AC_DEFINE(HAIKU)
+    AC_DEFINE(Haiku)
+    AC_DEFINE(HAVE_SOCKLEN_T)
+    AC_DEFINE(HAVE_FCNTL_FILE_LOCKING)
+    DSO_CFLAGS="-fPIC"
+    USE_PTHREADS=1
+    IMPL_STRATEGY=_PTH
+    MDCPUCFG_H=_haiku.cfg
+    if test -n "$USE_64"; then
+        PR_MD_ASFILES=os_Linux_x86_64.s
+    else
+        PR_MD_ASFILES=os_Linux_x86.s
+    fi
+    PR_MD_CSRCS=linux.c
+    MKSHLIB='$(CC) $(DSO_LDOPTS) -o $@'
+    DSO_CFLAGS=-fPIC
+    DSO_LDOPTS='-shared -Wl,-soname -Wl,$(notdir $@)'
+    _OPTIMIZE_FLAGS=-O2
+    AC_CHECK_LIB(network, gethostbyaddr, [OS_LIBS="$OS_LIBS -lnetwork"])
+    ;;
+
+
 *-hpux*)
     AC_DEFINE(XP_UNIX)
     AC_DEFINE(HPUX)
@@ -1671,7 +1695,7 @@ tools are selected during the Xcode/Developer Tools installation.])
     fi
     ;;
 
-*-linux*|*-gnu*|*-k*bsd*-gnu|*-android*|*-linuxandroid*)
+*-linux*|*-gnu*|*-k*bsd*-gnu|*-android*|*-linuxandroid*|*-haiku*)
     if test -z "$USE_NSPR_THREADS"; then
         USE_PTHREADS=1
         IMPL_STRATEGY=_PTH
@@ -2566,7 +2590,7 @@ if test -n "$USE_PTHREADS"; then
             _PTHREAD_LDFLAGS=-pthread
         fi
         ;;
-    *-linux*|*-gnu*|*-k*bsd*-gnu)
+    *-linux*|*-gnu*|*-k*bsd*-gnu|*-haiku*)
         AC_DEFINE(_REENTRANT)
         ;;
     esac

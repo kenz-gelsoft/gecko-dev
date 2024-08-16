@@ -46,6 +46,9 @@ PR_BEGIN_EXTERN_C
 #elif defined(BSDI)
 #include "md/_bsdi.h"
 
+#elif defined(HAIKU)
+#include "md/_haiku.h"
+
 #elif defined(HPUX)
 #include "md/_hpux.h"
 

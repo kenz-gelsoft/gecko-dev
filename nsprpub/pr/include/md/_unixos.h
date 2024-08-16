@@ -15,7 +15,7 @@
  * not be redefined.
  */
 #if !defined(LINUX) && !defined(__GNU__) && !defined(__GLIBC__) \
-    && !defined(DARWIN)
+    && !defined(DARWIN) && !defined(__HAIKU__)
 #ifndef FD_SETSIZE
 #define FD_SETSIZE  4096
 #endif
@@ -46,7 +46,7 @@
  */
 #include <sys/time.h>
 #include <sys/types.h>
-#if defined(AIX)
+#if defined(AIX) || defined(__HAIKU__)
 #include <sys/select.h>
 #endif
 

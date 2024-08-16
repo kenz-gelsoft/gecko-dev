@@ -1202,7 +1202,7 @@ PR_IMPLEMENT(PRStatus) PR_GetHostByAddr(
  * any usable implementation.
  */
 
-#if defined(ANDROID)
+#if defined(ANDROID) || defined(__HAIKU__)
 /* Android's Bionic libc system includes prototypes for these in netdb.h,
  * but doesn't actually include implementations.  It uses the 5-arg form,
  * so these functions end up not matching the prototype.  So just rename

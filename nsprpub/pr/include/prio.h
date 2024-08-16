@@ -155,10 +155,9 @@ union PRNetAddr {
         PRUint16 family;                /* address family (AF_INET) */
         PRUint16 port;                  /* port number */
         PRUint32 ip;                    /* The actual 32 bits of address */
-#ifdef XP_BEOS
-        char pad[4];                    /* Be has a smaller structure */
-#else
         char pad[8];
+#if defined(HAIKU)
+        char pad2[16];
 #endif
     } inet;
     struct {

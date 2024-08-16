@@ -265,17 +265,14 @@ PR_GetLibraryPath(void)
         char *p=NULL;
         int len;
 
-#ifdef XP_BEOS
+#if defined(XP_HAIKU)
         ev = getenv("LIBRARY_PATH");
-        if (!ev) {
-            ev = "%A/lib:/boot/home/config/lib:/boot/beos/system/lib";
-        }
-+#else
+#else
         ev = getenv("LD_LIBRARY_PATH");
+#endif
         if (!ev) {
             ev = "/usr/lib:/lib";
         }
-#endif
         len = strlen(ev) + 1;        /* +1 for the null */
 
         p = (char*) malloc(len);
