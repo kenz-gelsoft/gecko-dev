@@ -20,6 +20,8 @@
 #  include "md/_netbsd.cfg"
 #elif defined(__OpenBSD__)
 #  include "md/_openbsd.cfg"
+#elif defined(__HAIKU__)
+#  include "md/_beos.cfg"
 #elif defined(__linux__)
 #  include "md/_linux.cfg"
 #elif defined(__sun__)

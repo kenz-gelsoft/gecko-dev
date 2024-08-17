@@ -36,12 +36,16 @@ if CONFIG["OS_ARCH"] == "Linux":
         SOURCES += ["/nsprpub/pr/src/md/unix/os_Linux_x86.s"]
     elif CONFIG["TARGET_CPU"] == "ppc":
         SOURCES += ["/nsprpub/pr/src/md/unix/os_Linux_ppc.s"]
-elif CONFIG["OS_TARGET"] in ("FreeBSD", "OpenBSD", "NetBSD"):
+elif CONFIG["OS_TARGET"] in ("FreeBSD", "OpenBSD", "NetBSD", "Haiku"):
     DEFINES["HAVE_BSD_FLOCK"] = True
     DEFINES["HAVE_SOCKLEN_T"] = True
     DEFINES["HAVE_POINTER_LOCALTIME_R"] = True
     DEFINES[CONFIG["OS_TARGET"].upper()] = True
-    SOURCES += ["/nsprpub/pr/src/md/unix/%s.c" % CONFIG["OS_TARGET"].lower()]
+    if CONFIG["OS_TARGET"] == "Haiku":
+        DEFINES["HAVE_LONG_LONG"] = True
+        SOURCES += ["/nsprpub/pr/src/md/beos/beos.c"]
+    else:
+        SOURCES += ["/nsprpub/pr/src/md/unix/%s.c" % CONFIG["OS_TARGET"].lower()]
 elif CONFIG["OS_TARGET"] == "Darwin":
     OS_LIBS += ["-framework CoreServices"]
     # See also IncreaseDescriptorLimits in toolkit/xre/nsAppRunner.cpp
@@ -246,6 +250,7 @@ EXPORTS.nspr += [
 ]
 
 EXPORTS.nspr.md += [
+    "/nsprpub/pr/include/md/_beos.cfg",
     "/nsprpub/pr/include/md/_darwin.cfg",
     "/nsprpub/pr/include/md/_freebsd.cfg",
     "/nsprpub/pr/include/md/_linux.cfg",

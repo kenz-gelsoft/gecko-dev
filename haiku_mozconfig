@@ -9,7 +9,7 @@ ac_add_options --with-system-ffi
 ac_add_options --with-system-jpeg
 ac_add_options --with-system-libevent
 ac_add_options --with-system-libvpx
-ac_add_options --with-system-nspr
+#ac_add_options --with-system-nspr
 #ac_add_options --with-system-nss
 # --with-system-png won't work because the system's libpng doesn't have APNG support
 #ac_add_options --with-system-png
