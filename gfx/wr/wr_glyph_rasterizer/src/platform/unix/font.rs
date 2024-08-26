@@ -29,6 +29,7 @@ use libc::free;
 use std::{cmp, mem, ptr, slice};
 use std::cmp::max;
 use std::ffi::CString;
+use std::process;
 use std::sync::{Arc, Condvar, Mutex, MutexGuard};
 
 // These constants are not present in the freetype
@@ -221,8 +222,17 @@ impl FontCache {
                     )
                 }
                 FontTemplate::Native(NativeFontHandle { ref path, index }) => {
-                    let str = path.as_os_str().to_str().unwrap();
-                    let cstr = CString::new(str).unwrap();
+                    let str = path.as_os_str().to_str();
+                    if str == None {
+                        return Err(0);
+                    }
+                    let str = str.unwrap();
+                    println!("[{}] add_font={}", process::id(), &str);
+                    let mut v = Vec::from(str);
+                    while v.ends_with(&[0]) {
+                        v.pop();
+                    }
+                    let cstr = CString::from_vec_unchecked(v);
                     FT_New_Face(
                         self.lib,
                         cstr.as_ptr(),
@@ -382,8 +392,8 @@ impl FontContext {
     }
 
     pub fn add_raw_font(&mut self, font_key: &FontKey, bytes: Arc<Vec<u8>>, index: u32) {
-        if !self.fonts.contains_key(font_key) {
-            let len = bytes.len();
+        let len = bytes.len();
+        if !self.fonts.contains_key(font_key) && len > 0 {
             match FONT_CACHE.lock().unwrap().add_font(FontTemplate::Raw(bytes, index)) {
                 Ok(font) => self.fonts.insert(*font_key, font),
                 Err(result) => panic!("adding raw font failed: {} bytes, err={:?}", len, result),
@@ -394,9 +404,11 @@ impl FontContext {
     pub fn add_native_font(&mut self, font_key: &FontKey, native_font_handle: NativeFontHandle) {
         if !self.fonts.contains_key(font_key) {
             let path = native_font_handle.path.to_string_lossy().into_owned();
+            println!("[{}] add_native_font={}", process::id(), &path);
             match FONT_CACHE.lock().unwrap().add_font(FontTemplate::Native(native_font_handle)) {
                 Ok(font) => self.fonts.insert(*font_key, font),
-                Err(result) => panic!("adding native font failed: file={} err={:?}", path, result),
+                Err(result) => None,
+//                	panic!("adding native font failed: file={} err={:?}", path, result),
             };
         }
     }
