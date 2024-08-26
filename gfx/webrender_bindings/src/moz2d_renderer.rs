@@ -849,6 +849,9 @@ impl Moz2dBlobImageHandler {
             let mut scaled_fonts = Vec::new();
             while index.reader.pos < index.reader.buf.len() {
                 let e = index.read_entry();
+                if e.end > e.extra_end {
+                    continue;
+                }
                 process_fonts(
                     BufReader::new(&blob[e.end..e.extra_end]),
                     resources,
