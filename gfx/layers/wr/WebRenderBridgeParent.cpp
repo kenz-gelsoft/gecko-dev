@@ -451,7 +451,7 @@ static bool ReadRawFont(const OpAddRawFont& aOp, wr::ShmSegmentsReader& aReader,
   gfxOTSContext otsContext;
   if (!otsContext.Process(&output, source.begin().get(), source.length())) {
     gfxCriticalNote << "Failed sanitizing font " << aOp.key().mHandle;
-    return false;
+//    return false;
   }
   wr::Vec<uint8_t> bytes = output.forget();
 
@@ -588,6 +588,7 @@ bool WebRenderBridgeParent::UpdateResources(
       }
       case OpUpdateResource::TOpAddRawFont: {
         if (!ReadRawFont(cmd.get_OpAddRawFont(), reader, aUpdates)) {
+          gfxCriticalNote << "TOpAddRawFont failed";
           success = false;
         }
         break;
