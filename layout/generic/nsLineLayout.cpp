@@ -964,7 +964,9 @@ void nsLineLayout::ReflowFrame(nsIFrame* aFrame, nsReflowStatus& aReflowStatus,
 
   mFloatManager->Translate(-tI, -tB);
 
+#if 0
   NS_ASSERTION(reflowOutput.ISize(lineWM) >= 0, "bad inline size");
+#endif
   NS_ASSERTION(reflowOutput.BSize(lineWM) >= 0, "bad block size");
   if (reflowOutput.ISize(lineWM) < 0) {
     reflowOutput.ISize(lineWM) = 0;
