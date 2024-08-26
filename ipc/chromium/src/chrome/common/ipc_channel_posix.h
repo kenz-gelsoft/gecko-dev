@@ -153,7 +153,8 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   // here. Consequently, we pick a number here that is at least CMSG_SPACE(0) on
   // all platforms. We assert at runtime, in Channel::ChannelImpl::Init, that
   // it's big enough.
-  static constexpr size_t kControlBufferMaxFds = 200;
+//  static constexpr size_t kControlBufferMaxFds = 200;
+  static constexpr size_t kControlBufferMaxFds = 32;
   static constexpr size_t kControlBufferHeaderSize = 32;
   static constexpr size_t kControlBufferSize =
       kControlBufferMaxFds * sizeof(int) + kControlBufferHeaderSize;
