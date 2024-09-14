@@ -7,7 +7,9 @@
 TEST_DIRS += ["httpserver"]
 
 if CONFIG["ENABLE_TESTS"]:
-    TEST_DIRS += ["http3server", "gtest"]
+    TEST_DIRS += ["gtest"]
+    if CONFIG["OS_ARCH"] != "Haiku":
+        TEST_DIRS += ["http3server"]
 
 BROWSER_CHROME_MANIFESTS += [
     "browser/browser.toml",
