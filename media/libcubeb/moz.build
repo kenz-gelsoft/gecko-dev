@@ -8,5 +8,6 @@ with Files("**"):
     BUG_COMPONENT = ("Core", "Audio/Video: cubeb")
 
 DIRS += ['include', 'src']
-TEST_DIRS += ['gtest']
+if CONFIG['OS_ARCH'] != 'Haiku':
+    TEST_DIRS += ['gtest']
 
