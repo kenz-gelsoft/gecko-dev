@@ -13,7 +13,6 @@ SOURCES += [
     '../test/test_logging.cpp',
     '../test/test_overload_callback.cpp',
     '../test/test_record.cpp',
-    '../test/test_resampler.cpp',
     '../test/test_ring_array.cpp',
     '../test/test_ring_buffer.cpp',
     '../test/test_sanity.cpp',
@@ -29,6 +28,11 @@ if CONFIG['OS_ARCH'] == 'WINNT' and not CONFIG['MOZ_DEBUG']:
 # https://bugzilla.mozilla.org/show_bug.cgi?id=1864888
 if CONFIG['OS_ARCH'] != 'Linux':
     SOURCES += [ '../test/test_device_changed_callback.cpp' ]
+
+if CONFIG['OS_ARCH'] != 'Haiku':
+    SOURCES += [
+        '../test/test_resampler.cpp',
+    ]
 
 LOCAL_INCLUDES += [
     '../include',
