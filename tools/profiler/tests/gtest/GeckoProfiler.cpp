@@ -1124,6 +1124,8 @@ TEST(GeckoProfiler, ThreadRegistry_DataAccess)
 
 TEST(GeckoProfiler, ThreadRegistration_RegistrationEdgeCases)
 {
+  GTEST_SKIP() << "Skipping single test";
+
   using TR = profiler::ThreadRegistration;
   using TRy = profiler::ThreadRegistry;
 

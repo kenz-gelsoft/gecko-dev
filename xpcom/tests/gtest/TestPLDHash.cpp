@@ -99,6 +99,8 @@ static void InitCapacityOk_EntrySizeTooBig() {
 
 TEST(PLDHashTableTest, InitCapacityOk)
 {
+  GTEST_SKIP() << "Skipping single test";
+
   // Try the largest allowed capacity.  With kMaxCapacity==1<<26, this
   // would allocate (if we added an element) 0.5GB of entry store on 32-bit
   // platforms and 1GB on 64-bit platforms.

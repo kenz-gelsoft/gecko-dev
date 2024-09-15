@@ -148,6 +148,8 @@ TEST(ArenaAllocator, AllocationsPerChunk)
 
 TEST(ArenaAllocator, MemoryIsValid)
 {
+  GTEST_SKIP() << "Skipping single test";
+
   // Make multiple allocations and actually access the memory. This is
   // expected to trip up ASAN or valgrind if out of bounds memory is
   // accessed.

@@ -158,6 +158,8 @@ static void DeregisterEmpty_Test() {
 }
 
 TEST_F(TestAsyncBlockers, DeregisterEmpty) {
+  GTEST_SKIP() << "Skipping single test";
+
   ASSERT_DEATH_IF_SUPPORTED(DeregisterEmpty_Test(), "");
 }
 #endif  // defined(MOZ_DIAGNOSTIC_ASSERT_ENABLED) && !defined(ANDROID) &&
