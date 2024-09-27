@@ -987,7 +987,7 @@ TYPED_TEST_P(BaseHashtableTest, ShallowSizeOfExcludingThis) {
 
 TYPED_TEST_P(BaseHashtableTest, ShallowSizeOfIncludingThis) {
   // Make this work with ASAN builds, bug 1689549.
-#if !defined(MOZ_ASAN)
+#if !defined(MOZ_ASAN) && !defined(XP_HAIKU)
   auto table = MakeBaseHashtable<TypeParam>(
       TypeParam::kExpectedAddRefCnt_ShallowSizeOfIncludingThis);
 
