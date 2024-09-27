@@ -78,14 +78,16 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   virtual void OnFileCanReadWithoutBlocking(int fd) override;
   virtual void OnFileCanWriteWithoutBlocking(int fd) override;
 
-#if defined(XP_DARWIN)
+#if defined(XP_DARWIN) || defined(XP_HAIKU)
   void CloseDescriptors(uint32_t pending_fd_id) MOZ_REQUIRES(IOThread())
       MOZ_EXCLUDES(SendMutex());
 
+#if defined(XP_DARWIN)
   // Called on a Message immediately before it is sent/recieved to transfer
   // handles to the remote process, or accept handles from the remote process.
   bool AcceptMachPorts(Message& msg) MOZ_REQUIRES(IOThread());
   bool TransferMachPorts(Message& msg) MOZ_REQUIRES_SHARED(chan_cap_);
+#endif // XP_DARWIN
 #endif
 
   void OutputQueuePush(mozilla::UniquePtr<Message> msg)
@@ -153,7 +155,11 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   // here. Consequently, we pick a number here that is at least CMSG_SPACE(0) on
   // all platforms. We assert at runtime, in Channel::ChannelImpl::Init, that
   // it's big enough.
+#ifdef XP_HAIKU
+  static constexpr size_t kControlBufferMaxFds = 32;
+#else
   static constexpr size_t kControlBufferMaxFds = 200;
+#endif
   static constexpr size_t kControlBufferHeaderSize = 32;
   static constexpr size_t kControlBufferSize =
       kControlBufferMaxFds * sizeof(int) + kControlBufferHeaderSize;
@@ -174,7 +180,7 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   base::ProcessId other_pid_ MOZ_GUARDED_BY(chan_cap_) =
       base::kInvalidProcessId;
 
-#if defined(XP_DARWIN)
+#if defined(XP_DARWIN) || defined(XP_HAIKU)
   struct PendingDescriptors {
     uint32_t id;
     nsTArray<mozilla::UniqueFileHandle> handles;
@@ -185,6 +191,7 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   // A generation ID for RECEIVED_FD messages.
   uint32_t last_pending_fd_id_ MOZ_GUARDED_BY(SendMutex()) = 0;
 
+#if defined(XP_DARWIN)
   // Whether or not to accept mach ports from a remote process, and whether this
   // process is the privileged side of a IPC::Channel which can transfer mach
   // ports.
@@ -193,6 +200,7 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
 
   // If available, the task port for the remote process.
   mozilla::UniqueMachSendRight other_task_ MOZ_GUARDED_BY(chan_cap_);
+#endif // XP_DARWIN
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChannelImpl);

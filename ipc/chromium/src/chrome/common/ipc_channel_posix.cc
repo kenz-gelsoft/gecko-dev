@@ -196,9 +196,11 @@ void Channel::ChannelImpl::Init(Mode mode) {
   input_cmsg_buf_ = mozilla::MakeUnique<char[]>(kControlBufferSize);
   SetPipe(-1);
   waiting_connect_ = true;
-#if defined(XP_DARWIN)
+#if defined(XP_DARWIN) || defined(XP_HAIKU)
   last_pending_fd_id_ = 0;
+#if defined(XP_DARWIN)
   other_task_ = nullptr;
+#endif // XP_DARWIN
 #endif
 }
 
@@ -476,7 +478,7 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
           return false;
         }
 
-#if defined(XP_DARWIN)
+#if defined(XP_DARWIN) || defined(XP_HAIKU)
         // Send a message to the other side, indicating that we are now
         // responsible for closing the descriptor.
         auto fdAck = mozilla::MakeUnique<Message>(MSG_ROUTING_NONE,
@@ -514,7 +516,7 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
         int32_t other_pid = MessageIterator(m).NextInt();
         SetOtherPid(other_pid);
         listener_->OnChannelConnected(other_pid);
-#if defined(XP_DARWIN)
+#if defined(XP_DARWIN) || defined(XP_HAIKU)
       } else if (m.routing_id() == MSG_ROUTING_NONE &&
                  m.type() == RECEIVED_FDS_MESSAGE_TYPE) {
         DCHECK(m.fd_cookie() != 0);
@@ -583,7 +585,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
       }
 
       msg->header()->num_handles = msg->attached_handles_.Length();
-#if defined(XP_DARWIN)
+#if defined(XP_DARWIN) || defined(XP_HAIKU)
       if (!msg->attached_handles_.IsEmpty()) {
         msg->set_fd_cookie(++last_pending_fd_id_);
       }
@@ -741,7 +743,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
                  "not all handles were sent");
       partial_write_.reset();
 
-#if defined(XP_DARWIN)
+#if defined(XP_DARWIN) || defined(XP_HAIKU)
       if (!msg->attached_handles_.IsEmpty()) {
         pending_fds_.push_back(PendingDescriptors{
             msg->fd_cookie(), std::move(msg->attached_handles_)});
@@ -818,7 +820,7 @@ void Channel::ChannelImpl::OnFileCanReadWithoutBlocking(int fd) {
   }
 }
 
-#if defined(XP_DARWIN)
+#if defined(XP_DARWIN) || defined(XP_HAIKU)
 void Channel::ChannelImpl::CloseDescriptors(uint32_t pending_fd_id) {
   mozilla::MutexAutoLock lock(SendMutex());
   chan_cap_.NoteExclusiveAccess();
@@ -896,10 +898,12 @@ void Channel::ChannelImpl::CloseLocked() {
   }
   input_overflow_fds_.clear();
 
-#if defined(XP_DARWIN)
+#if defined(XP_DARWIN) || defined(XP_HAIKU)
   pending_fds_.clear();
 
+#if defined(XP_DARWIN)
   other_task_ = nullptr;
+#endif // XP_DARWIN
 #endif
 }
 

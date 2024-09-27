@@ -123,11 +123,14 @@ void CloseSuperfluousFds(void* aCtx, bool (*aShouldPreserve)(void*, int)) {
 #if defined(ANDROID)
   static const rlim_t kSystemDefaultMaxFds = 1024;
   static const char kFDDir[] = "/proc/self/fd";
-#elif defined(XP_LINUX) || defined(XP_SOLARIS) || defined(XP_HAIKU)
+#elif defined(XP_LINUX) || defined(XP_SOLARIS)
   static const rlim_t kSystemDefaultMaxFds = 8192;
   static const char kFDDir[] = "/proc/self/fd";
 #elif defined(XP_DARWIN)
   static const rlim_t kSystemDefaultMaxFds = 256;
+  static const char kFDDir[] = "/dev/fd";
+#elif defined(XP_HAIKU)
+  static const rlim_t kSystemDefaultMaxFds = 32;
   static const char kFDDir[] = "/dev/fd";
 #elif defined(__DragonFly__) || defined(XP_FREEBSD) || defined(XP_NETBSD) || \
     defined(XP_OPENBSD)

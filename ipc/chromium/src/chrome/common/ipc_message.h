@@ -307,7 +307,7 @@ class Message : public mojo::core::ports::UserMessage, public Pickle {
   // IPC::Message.
   void SetAttachedFileHandles(nsTArray<mozilla::UniqueFileHandle> handles);
 
-#if defined(XP_DARWIN)
+#if defined(XP_DARWIN) || defined(XP_HAIKU)
   void set_fd_cookie(uint32_t cookie) { header()->cookie = cookie; }
   uint32_t fd_cookie() const { return header()->cookie; }
 #endif
@@ -373,10 +373,12 @@ class Message : public mojo::core::ports::UserMessage, public Pickle {
     msgid_t type;          // specifies the user-defined message type
     HeaderFlags flags;     // specifies control flags for the message
     uint32_t num_handles;  // the number of handles included with this message
-#if defined(XP_DARWIN)
+#if defined(XP_DARWIN) || defined(XP_HAIKU)
     uint32_t cookie;  // cookie to ACK that the descriptors have been read.
+#if defined(XP_DARWIN)
     uint32_t num_send_rights;  // the number of mach send rights included with
                                // this message
+#endif // XP_DARWIN
 #endif
     // For sync messages, a transaction ID for message ordering.
     int32_t txid;
