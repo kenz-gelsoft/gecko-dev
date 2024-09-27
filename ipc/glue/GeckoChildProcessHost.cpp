@@ -1219,7 +1219,7 @@ Result<Ok, LaunchError> PosixProcessLauncher::DoSetup() {
     nsCString path;
     NS_CopyUnicodeToNative(nsDependentString(gGREBinPath), path);
 #  if defined(XP_LINUX) || defined(__DragonFly__) || defined(XP_FREEBSD) || \
-      defined(XP_NETBSD) || defined(XP_OPENBSD)
+      defined(XP_NETBSD) || defined(XP_OPENBSD) || defined(XP_HAIKU)
     const char* ld_library_path = PR_GetEnv("LD_LIBRARY_PATH");
     nsCString new_ld_lib_path(path.get());
 
