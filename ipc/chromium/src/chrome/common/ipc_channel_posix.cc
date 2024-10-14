@@ -356,7 +356,14 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
           DCHECK(payload_len % sizeof(int) == 0);
 #ifdef XP_HAIKU
           if (num_wire_fds > 0) {
-            input_overflow_fds_ = std::vector<int>(&wire_fds[0], &wire_fds[num_wire_fds]);
+            if (input_overflow_fds_.empty()) {
+              input_overflow_fds_ = std::vector<int>(&wire_fds[0], &wire_fds[num_wire_fds]);
+            } else {
+              const size_t prev_size = input_overflow_fds_.size();
+              input_overflow_fds_.resize(prev_size + num_wire_fds);
+              memcpy(&input_overflow_fds_[prev_size], wire_fds,
+                     num_wire_fds * sizeof(int));
+            }
           }
 #endif
           wire_fds = reinterpret_cast<int*>(CMSG_DATA(cmsg));
