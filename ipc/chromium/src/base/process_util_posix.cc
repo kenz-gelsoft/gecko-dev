@@ -129,11 +129,8 @@ void CloseSuperfluousFds(void* aCtx, bool (*aShouldPreserve)(void*, int)) {
 #elif defined(XP_DARWIN)
   static const rlim_t kSystemDefaultMaxFds = 256;
   static const char kFDDir[] = "/dev/fd";
-#elif defined(XP_HAIKU)
-  static const rlim_t kSystemDefaultMaxFds = 32;
-  static const char kFDDir[] = "/dev/fd";
 #elif defined(__DragonFly__) || defined(XP_FREEBSD) || defined(XP_NETBSD) || \
-    defined(XP_OPENBSD)
+    defined(XP_OPENBSD) || defined(XP_HAIKU)
   // the getrlimit below should never fail, so whatever ..
   static const rlim_t kSystemDefaultMaxFds = 1024;
   // at least /dev/fd will exist
@@ -166,7 +163,9 @@ void CloseSuperfluousFds(void* aCtx, bool (*aShouldPreserve)(void*, int)) {
 
       // Since we're just trying to close anything we can find,
       // ignore any error return values of close().
-      close(fd);
+      if (!close(fd)) {
+        CHROMIUM_LOG(WARNING) << "CloseSuperfluousFds closed fd=" << fd;
+      }
     }
     return;
   }

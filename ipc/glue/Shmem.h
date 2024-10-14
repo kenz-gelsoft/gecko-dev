@@ -124,7 +124,9 @@ class Shmem final {
 
   Shmem(SharedMemory* aSegment, id_t aId, size_t aSize, bool aUnsafe);
 
+ public:
   id_t Id() const { return mId; }
+ private:
 
   SharedMemory* Segment() const { return mSegment; }
 

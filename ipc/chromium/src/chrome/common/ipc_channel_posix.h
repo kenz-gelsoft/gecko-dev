@@ -155,11 +155,7 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   // here. Consequently, we pick a number here that is at least CMSG_SPACE(0) on
   // all platforms. We assert at runtime, in Channel::ChannelImpl::Init, that
   // it's big enough.
-#ifdef XP_HAIKU
-  static constexpr size_t kControlBufferMaxFds = 32;
-#else
   static constexpr size_t kControlBufferMaxFds = 200;
-#endif
   static constexpr size_t kControlBufferHeaderSize = 32;
   static constexpr size_t kControlBufferSize =
       kControlBufferMaxFds * sizeof(int) + kControlBufferHeaderSize;

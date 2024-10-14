@@ -112,6 +112,8 @@ bool ErrorIsBrokenPipe(int err) { return err == EPIPE || err == ECONNRESET; }
 static inline ssize_t corrected_sendmsg(int socket,
                                         const struct msghdr* message,
                                         int flags) {
+  CHROMIUM_LOG(WARNING)
+      << "corrected_sendmsg";
 #if defined(ANDROID) && \
     (defined(__aarch64__) || (defined(DEBUG) && defined(__x86_64__)))
   static constexpr auto kBadValue = static_cast<ssize_t>(0xFFFFFFFF);
@@ -217,11 +219,15 @@ bool Channel::ChannelImpl::EnqueueHelloMessage() {
 }
 
 bool Channel::ChannelImpl::Connect(Listener* listener) {
+  CHROMIUM_LOG(WARNING)
+      << "Channel::ChannelImpl::Connect";
   IOThread().AssertOnCurrentThread();
   mozilla::MutexAutoLock lock(SendMutex());
   chan_cap_.NoteExclusiveAccess();
 
   if (pipe_ == -1) {
+    CHROMIUM_LOG(WARNING)
+        << "ChannelImpl::Connect: pipe_=" << pipe_;
     return false;
   }
 
@@ -231,6 +237,8 @@ bool Channel::ChannelImpl::Connect(Listener* listener) {
 }
 
 bool Channel::ChannelImpl::ContinueConnect() {
+  CHROMIUM_LOG(WARNING)
+      << "Channel::ChannelImpl::ContinueConnect";
   chan_cap_.NoteExclusiveAccess();
   MOZ_ASSERT(pipe_ != -1);
 
@@ -261,6 +269,8 @@ void Channel::ChannelImpl::SetOtherPid(base::ProcessId other_pid) {
 }
 
 bool Channel::ChannelImpl::ProcessIncomingMessages() {
+  CHROMIUM_LOG(WARNING)
+      << "ChannelImpl::ProcessIncomingMessages";
   chan_cap_.NoteOnIOThread();
 
   struct msghdr msg = {0};
@@ -273,7 +283,11 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
   for (;;) {
     msg.msg_controllen = kControlBufferSize;
 
-    if (pipe_ == -1) return false;
+    if (pipe_ == -1) {
+        CHROMIUM_LOG(WARNING)
+            << "ChannelImpl::ProcessIncomingMessages2: pipe_=" << pipe_;
+        return false;
+    }
 
     // In some cases the beginning of a message will be stored in input_buf_. We
     // don't want to overwrite that, so we store the new data after it.
@@ -284,8 +298,13 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
     // recvmsg() returns 0 if the connection has closed or EAGAIN if no data
     // is waiting on the pipe.
     ssize_t bytes_read = HANDLE_EINTR(recvmsg(pipe_, &msg, MSG_DONTWAIT));
+    CHROMIUM_LOG(WARNING)
+        << "ChannelImpl::ProcessIncomingMessages3: bytes_read=" << bytes_read
+        << " errno=" << errno;
 
     if (bytes_read < 0) {
+      CHROMIUM_LOG(WARNING)
+          << "ChannelImpl::ProcessIncomingMessages4: errno=" << errno;
       if (errno == EAGAIN) {
         return true;
       } else {
@@ -320,16 +339,31 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
     //   if (CMSG_FIRSTHDR(&msg))
     //     printf("Bug found!\n");
     // }
+    std::stringstream ss;
     if (msg.msg_controllen > 0) {
       // On OSX, CMSG_FIRSTHDR doesn't handle the case where controllen is 0
       // and will return a pointer into nowhere.
       for (struct cmsghdr* cmsg = CMSG_FIRSTHDR(&msg); cmsg;
            cmsg = CMSG_NXTHDR(&msg, cmsg)) {
+        CHROMIUM_LOG(WARNING)
+            << "ChannelImpl::ProcessIncomingMessages3.5: level=" << cmsg->cmsg_level
+            << " type=" << cmsg->cmsg_type
+            << " msgflags=" << msg.msg_flags;
         if (cmsg->cmsg_level == SOL_SOCKET && cmsg->cmsg_type == SCM_RIGHTS) {
           const unsigned payload_len = cmsg->cmsg_len - CMSG_LEN(0);
+          CHROMIUM_LOG(WARNING)
+              << "ChannelImpl::ProcessIncomingMessages3.6: paylen=" << payload_len;
           DCHECK(payload_len % sizeof(int) == 0);
+#ifdef XP_HAIKU
+          if (num_wire_fds > 0) {
+            input_overflow_fds_ = std::vector<int>(&wire_fds[0], &wire_fds[num_wire_fds]);
+          }
+#endif
           wire_fds = reinterpret_cast<int*>(CMSG_DATA(cmsg));
           num_wire_fds = payload_len / 4;
+          for (unsigned i = 0; i < num_wire_fds; ++i) {
+            ss << wire_fds[i] << ",";
+          }
 
           if (msg.msg_flags & MSG_CTRUNC) {
             CHROMIUM_LOG(ERROR)
@@ -339,10 +373,15 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
               IGNORE_EINTR(close(wire_fds[i]));
             return false;
           }
+#ifndef XP_HAIKU
           break;
+#endif
         }
       }
     }
+    CHROMIUM_LOG(WARNING)
+        << "ChannelImpl::ProcessIncomingMessages: pipe=" << pipe_
+        << ", fds=" << ss.str();
 
     // Process messages from input buffer.
     const char* p = input_buf_.get();
@@ -357,6 +396,8 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
     if (input_overflow_fds_.empty()) {
       fds = wire_fds;
       num_fds = num_wire_fds;
+      CHROMIUM_LOG(WARNING)
+          << "ChannelImpl::ProcessIncomingMessages5: num_fds=" << num_fds;
     } else {
       // This code may look like a no-op in the case where
       // num_wire_fds == 0, but in fact:
@@ -381,6 +422,8 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
       }
       fds = &input_overflow_fds_[0];
       num_fds = input_overflow_fds_.size();
+      CHROMIUM_LOG(WARNING)
+          << "ChannelImpl::ProcessIncomingMessages6: num_fds=" << num_fds;
     }
 
     // The data for the message we're currently reading consists of any data
@@ -398,6 +441,8 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
       } else {
         message_length = Message::MessageSize(p, end);
       }
+      CHROMIUM_LOG(WARNING)
+          << "ChannelImpl::ProcessIncomingMessages7: len=" << message_length;
 
       if (!message_length) {
         // We haven't seen the full message header.
@@ -431,6 +476,9 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
         m.InputBytes(p, in_buf);
         p += in_buf;
 
+        CHROMIUM_LOG(WARNING)
+            << "ChannelImpl::ProcessIncomingMessages8: in_buf=" << in_buf
+            << " remaining=" << remaining;
         // Are we done reading this message?
         partial = in_buf != remaining;
       } else {
@@ -440,6 +488,9 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
         incoming_message_ = mozilla::MakeUnique<Message>(p, in_buf);
         p += in_buf;
 
+        CHROMIUM_LOG(WARNING)
+            << "ChannelImpl::ProcessIncomingMessages9: in_buf=" << in_buf
+            << " len=" << message_length;
         // Are we done reading this message?
         partial = in_buf != message_length;
       }
@@ -451,6 +502,10 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
       Message& m = *incoming_message_;
 
       if (m.header()->num_handles) {
+        CHROMIUM_LOG(WARNING)
+            << "ChannelImpl::ProcessIncomingMessages10: num_handles=" << m.header()->num_handles
+            << " num_fds=" << num_fds
+            << " fds_i=" << fds_i;
         // the message has file descriptors
         const char* error = NULL;
         if (m.header()->num_handles > num_fds - fds_i) {
@@ -549,6 +604,8 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
 }
 
 bool Channel::ChannelImpl::ProcessOutgoingMessages() {
+  CHROMIUM_LOG(WARNING)
+      << "ChannelImpl::ProcessOutgoingMessages0";
   // NOTE: This method may be called on threads other than `IOThread()`.
   chan_cap_.NoteSendMutex();
 
@@ -556,9 +613,17 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
                               // no connection?
   is_blocked_on_write_ = false;
 
-  if (output_queue_.IsEmpty()) return true;
+  if (output_queue_.IsEmpty()) {
+    CHROMIUM_LOG(WARNING)
+        << "ChannelImpl::ProcessOutgoingMessages1";
+    return true;
+  }
 
-  if (pipe_ == -1) return false;
+  if (pipe_ == -1) {
+    CHROMIUM_LOG(WARNING)
+        << "ChannelImpl::ProcessOutgoingMessages2";
+    return false;
+  }
 
   // Write out all the messages we can till the write blocks or there are no
   // more outgoing messages.
@@ -600,6 +665,8 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
     }
 
     if (partial_write_->iter_.Done()) {
+      CHROMIUM_LOG(WARNING)
+          << "ChannelImpl::ProcessOutgoingMessages3";
       MOZ_DIAGNOSTIC_ASSERT(false, "partial_write_->iter_ should not be done");
       // report a send error to our caller, which will close the channel.
       return false;
@@ -614,6 +681,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
     // attachments must be sent over multiple `sendmsg` calls.
     const size_t num_fds = std::min(handles.Length(), kControlBufferMaxFds);
     size_t max_amt_to_write = iter.TotalBytesAvailable(msg->Buffers());
+    std::stringstream ss;
     if (num_fds > 0) {
       msgh.msg_control = cmsgBuf;
       msgh.msg_controllen = CMSG_LEN(sizeof(int) * num_fds);
@@ -622,7 +690,9 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
       cmsg->cmsg_type = SCM_RIGHTS;
       cmsg->cmsg_len = msgh.msg_controllen;
       for (size_t i = 0; i < num_fds; ++i) {
-        reinterpret_cast<int*>(CMSG_DATA(cmsg))[i] = handles[i].get();
+        int fd_i = handles[i].get();
+        ss << fd_i << ",";
+        reinterpret_cast<int*>(CMSG_DATA(cmsg))[i] = fd_i;
       }
 
       // Avoid writing one byte per remaining handle in excess of
@@ -634,6 +704,9 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
                  "must be at least one byte in the message for each handle");
       max_amt_to_write -= remaining;
     }
+    CHROMIUM_LOG(WARNING)
+        << "ChannelImpl::ProcessOutgoingMessages: handles=" << handles.Length()
+        << ", fds=" << ss.str();
 
     // Store remaining segments to write into iovec.
     //
@@ -665,6 +738,9 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
 
     ssize_t bytes_written =
         HANDLE_EINTR(corrected_sendmsg(pipe_, &msgh, MSG_DONTWAIT));
+    CHROMIUM_LOG(WARNING)
+        << "ChannelImpl::ProcessOutgoingMessages4: errno=" << errno
+        << ", written=" << bytes_written;
 
     if (bytes_written < 0) {
       switch (errno) {
@@ -672,7 +748,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
           // Not an error; the sendmsg would have blocked, so return to the
           // event loop and try again later.
           break;
-#if defined(XP_DARWIN) || defined(XP_NETBSD)
+#if defined(XP_DARWIN) || defined(XP_NETBSD) || defined(XP_HAIKU)
           // (Note: this comment is copied from https://crrev.com/86c3d9ef4fdf6;
           // see also bug 1142693 comment #73.)
           //
@@ -709,6 +785,11 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
 
     if (intentional_short_write ||
         static_cast<size_t>(bytes_written) != amt_to_write) {
+      CHROMIUM_LOG(WARNING)
+          << "ChannelImpl::ProcessOutgoingMessages5: short=" << intentional_short_write
+          << ", written=" << bytes_written
+          << ", to_write=" << amt_to_write;
+        
       // If write() fails with EAGAIN or EMSGSIZE then bytes_written will be -1.
       if (bytes_written > 0) {
         MOZ_DIAGNOSTIC_ASSERT(intentional_short_write ||
@@ -743,6 +824,10 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
                  "not all handles were sent");
       partial_write_.reset();
 
+      if (!msg->attached_handles_.IsEmpty()) {
+        CHROMIUM_LOG(WARNING)
+            << "ChannelImpl::ProcessOutgoingMessages6";
+      }
 #if defined(XP_DARWIN) || defined(XP_HAIKU)
       if (!msg->attached_handles_.IsEmpty()) {
         pending_fds_.push_back(PendingDescriptors{
@@ -772,6 +857,8 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
 }
 
 bool Channel::ChannelImpl::Send(mozilla::UniquePtr<Message> message) {
+  CHROMIUM_LOG(WARNING)
+      << "ChannelImpl::Send0";
   // NOTE: This method may be called on threads other than `IOThread()`.
   mozilla::MutexAutoLock lock(SendMutex());
   chan_cap_.NoteSendMutex();
@@ -787,6 +874,8 @@ bool Channel::ChannelImpl::Send(mozilla::UniquePtr<Message> message) {
   // the channel is destructed.  We might as well delete message now, instead
   // of waiting for the channel to be destructed.
   if (pipe_ == -1) {
+    CHROMIUM_LOG(WARNING)
+        << "ChannelImpl::Send: pipe_=" << pipe_;
     if (mozilla::ipc::LoggingEnabled()) {
       fprintf(stderr,
               "Can't send message %s, because this channel is closed.\n",
@@ -798,6 +887,8 @@ bool Channel::ChannelImpl::Send(mozilla::UniquePtr<Message> message) {
   OutputQueuePush(std::move(message));
   if (!waiting_connect_) {
     if (!is_blocked_on_write_) {
+      CHROMIUM_LOG(WARNING)
+          << "ChannelImpl::Send";
       if (!ProcessOutgoingMessages()) return false;
     }
   }
@@ -807,6 +898,8 @@ bool Channel::ChannelImpl::Send(mozilla::UniquePtr<Message> message) {
 
 // Called by libevent when we can read from th pipe without blocking.
 void Channel::ChannelImpl::OnFileCanReadWithoutBlocking(int fd) {
+  CHROMIUM_LOG(WARNING)
+      << "ChannelImpl::OnFileCanReadWithoutBlocking: fd=" << fd;
   IOThread().AssertOnCurrentThread();
   chan_cap_.NoteOnIOThread();
 
@@ -856,6 +949,8 @@ void Channel::ChannelImpl::OutputQueuePop() {
 
 // Called by libevent when we can write to the pipe without blocking.
 void Channel::ChannelImpl::OnFileCanWriteWithoutBlocking(int fd) {
+  CHROMIUM_LOG(WARNING)
+      << "ChannelImpl::OnFileCanWriteWithoutBlocking: fd=" << fd;
   RefPtr<ChannelImpl> grip(this);
   IOThread().AssertOnCurrentThread();
   mozilla::ReleasableMutexAutoLock lock(SendMutex());
@@ -883,6 +978,8 @@ void Channel::ChannelImpl::CloseLocked() {
   read_watcher_.StopWatchingFileDescriptor();
   write_watcher_.StopWatchingFileDescriptor();
   if (pipe_ != -1) {
+    CHROMIUM_LOG(WARNING)
+        << "ChannelImpl::CloseLocked: pipe_=" << pipe_;
     IGNORE_EINTR(close(pipe_));
     SetPipe(-1);
   }
