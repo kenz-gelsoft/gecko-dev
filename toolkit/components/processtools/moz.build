@@ -43,6 +43,8 @@ if toolkit == "gtk" or toolkit == "android":
         UNIFIED_SOURCES += ["ProcInfo_bsd.cpp"]
     elif CONFIG["OS_TARGET"] == "SunOS":
         UNIFIED_SOURCES += ["ProcInfo_solaris.cpp"]
+    elif CONFIG["OS_TARGET"] == "Haiku":
+        UNIFIED_SOURCES += ["ProcInfo_haiku.cpp"]
     else:
         UNIFIED_SOURCES += ["ProcInfo_linux.cpp"]
 elif toolkit == "windows":
