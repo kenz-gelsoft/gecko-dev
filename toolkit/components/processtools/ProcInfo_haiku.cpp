@@ -191,7 +191,7 @@ nsresult GetCpuTimeSinceProcessStartInMs(uint64_t* aResult) {
   if (B_OK != get_thread_info(thread, &info)) {
     return NS_ERROR_FAILURE;
   }
-  const uint64_t microseconds = info.user_time + info.kernel_time;
+  const bigtime_t microseconds = info.user_time + info.kernel_time;
   *aResult = microseconds / 1000;
   return NS_OK;
 }
@@ -211,118 +211,39 @@ ProcInfoPromise::ResolveOrRejectValue GetProcInfoSync(
   }
   for (const auto& request : aRequests) {
     ProcInfo info;
-
-    timespec t;
-    clockid_t clockid = MAKE_PROCESS_CPUCLOCK(request.pid, CPUCLOCK_SCHED);
-    if (clock_gettime(clockid, &t) == 0) {
-      info.cpuTime = uint64_t(t.tv_sec) * 1'000'000'000u + uint64_t(t.tv_nsec);
-    } else {
-      // Fallback to parsing /proc/<pid>/stat
-      StatReader reader(request.pid);
-      nsresult rv = reader.ParseProc(info);
-      if (NS_FAILED(rv)) {
-        // Can't read data for this proc.
-        // Probably either a sandboxing issue or a race condition, e.g.
-        // the process has been just been killed. Regardless, skip process.
-        continue;
-      }
-    }
-
-    // The 'Memory' value displayed in the system monitor is resident -
-    // shared. statm contains more fields, but we're only interested in
-    // the first three.
-    static const int MAX_FIELD = 3;
-    size_t VmSize, resident, shared;
-    info.memory = 0;
-    FILE* f = fopen(nsPrintfCString("/proc/%u/statm", request.pid).get(), "r");
-    if (f) {
-      int nread = fscanf(f, "%zu %zu %zu", &VmSize, &resident, &shared);
-      fclose(f);
-      if (nread == MAX_FIELD) {
-        info.memory = (resident - shared) * getpagesize();
-      }
-    }
-
-    // Extra info
-    info.pid = request.pid;
+    info.pid     = request.pid;
     info.childId = request.childId;
-    info.type = request.processType;
-    info.origin = request.origin;
+    info.type    = request.processType;
+    info.origin  = request.origin;
     info.windows = std::move(request.windowInfo);
     info.utilityActors = std::move(request.utilityInfo);
-
-    // Let's look at the threads
-    nsCString taskPath;
-    taskPath.AppendPrintf("/proc/%u/task", unsigned(request.pid));
-    DIR* dirHandle = opendir(taskPath.get());
-    if (!dirHandle) {
-      // For some reason, we have no data on the threads for this process.
-      // Most likely reason is that we have just lost a race condition and
-      // the process is dead.
-      // Let's stop here and ignore the entire process.
+ 
+    team_info team;
+    if (B_OK != get_team_info(request.pid, &team)) {
       continue;
     }
-    auto cleanup = mozilla::MakeScopeExit([&] { closedir(dirHandle); });
 
-    // If we can't read some thread info, we ignore that thread.
-    dirent* entry;
-    while ((entry = readdir(dirHandle)) != nullptr) {
-      if (entry->d_name[0] == '.') {
-        continue;
-      }
-      nsAutoCString entryName(entry->d_name);
-      nsresult rv;
-      int32_t tid = entryName.ToInteger(&rv);
-      if (NS_FAILED(rv)) {
-        continue;
-      }
-
+    info.cpuTime = 0;
+    int32 cookie_thread = 0;
+    thread_info thread;
+    while (B_OK == get_next_thread_info(team.team, &cookie_thread, &thread)) {
+      const bigtime_t microseconds = thread.user_time + thread.kernel_time;
+      const uint64_t  cpuTime      = microseconds / 1000;
+      info.cpuTime = std::max(info.cpuTime, cpuTime);
+      
       ThreadInfo threadInfo;
-      threadInfo.tid = tid;
-
-      timespec ts;
-      if (clock_gettime(MAKE_THREAD_CPUCLOCK(tid, CPUCLOCK_SCHED), &ts) == 0) {
-        threadInfo.cpuTime =
-            uint64_t(ts.tv_sec) * 1'000'000'000u + uint64_t(ts.tv_nsec);
-
-        nsCString path;
-        path.AppendPrintf("/proc/%u/task/%u/comm", unsigned(request.pid),
-                          unsigned(tid));
-        FILE* fstat = fopen(path.get(), "r");
-        if (fstat) {
-          // /proc is a virtual file system and all files are
-          // of size 0, so GetFileSize() and related functions will
-          // return 0 - so the way to read the file is to fill a buffer
-          // of an arbitrary big size and look for the end of line char.
-          // The size of the buffer needs to be as least 16, which is the
-          // value of TASK_COMM_LEN in the Linux kernel.
-          char buffer[32];
-          char* start = fgets(buffer, sizeof(buffer), fstat);
-          fclose(fstat);
-          if (start) {
-            // The thread name should always be smaller than our buffer,
-            // so we should find a newline character.
-            char* end = strchr(buffer, '\n');
-            if (end) {
-              threadInfo.name.AssignASCII(buffer, size_t(end - start));
-              info.threads.AppendElement(threadInfo);
-              continue;
-            }
-          }
-        }
-      }
-
-      // Fallback to parsing /proc/<pid>/task/<tid>/stat
-      // This is needed for child processes, as access to the per-thread
-      // CPU clock is restricted to the process owning the thread.
-      ThreadInfoReader reader(request.pid, tid);
-      rv = reader.ParseThread(threadInfo);
-      if (NS_FAILED(rv)) {
-        continue;
-      }
+      threadInfo.tid = thread.thread;
+      threadInfo.cpuTime = cpuTime;
       info.threads.AppendElement(threadInfo);
     }
-
+    
+    info.memory = 0;
+    ssize_t cookie_area = 0;
+    area_info area;
+    while (B_OK == get_next_area_info(team.team, &cookie_area, &area)) {
+      info.memory += area.size;
+    }
+    
     if (!gathered.put(request.pid, std::move(info))) {
       result.SetReject(NS_ERROR_OUT_OF_MEMORY);
       return result;
