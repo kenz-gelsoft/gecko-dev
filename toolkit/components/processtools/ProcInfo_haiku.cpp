@@ -37,6 +37,22 @@ ProcInfoPromise::ResolveOrRejectValue GetProcInfoSync(
   }
   for (const auto& request : aRequests) {
     ProcInfo info;
+
+    team_usage_info usage;
+    if (B_OK != get_team_usage_info(request.pid, B_TEAM_USAGE_SELF, &usage)) {
+      continue;
+    }
+    const bigtime_t microseconds = usage.user_time + usage.kernel_time;
+    const uint64_t  nanoseconds  = microseconds * 1000;
+    info.cpuTime = nanoseconds;
+    
+    info.memory = 0;
+    ssize_t cookie_area = 0;
+    area_info area;
+    while (B_OK == get_next_area_info(request.pid, &cookie_area, &area)) {
+      info.memory += area.ram_size;
+    }
+    
     info.pid     = request.pid;
     info.childId = request.childId;
     info.type    = request.processType;
@@ -44,30 +60,16 @@ ProcInfoPromise::ResolveOrRejectValue GetProcInfoSync(
     info.windows = std::move(request.windowInfo);
     info.utilityActors = std::move(request.utilityInfo);
  
-    team_info team;
-    if (B_OK != get_team_info(request.pid, &team)) {
-      continue;
-    }
-
-    info.cpuTime = 0;
     int32 cookie_thread = 0;
     thread_info thread;
-    while (B_OK == get_next_thread_info(team.team, &cookie_thread, &thread)) {
+    while (B_OK == get_next_thread_info(request.pid, &cookie_thread, &thread)) {
       const bigtime_t microseconds = thread.user_time + thread.kernel_time;
       const uint64_t  nanoseconds  = microseconds * 1000;
-      info.cpuTime = std::max(info.cpuTime, nanoseconds);
       
       ThreadInfo threadInfo;
       threadInfo.tid = thread.thread;
       threadInfo.cpuTime = nanoseconds;
       info.threads.AppendElement(threadInfo);
-    }
-    
-    info.memory = 0;
-    ssize_t cookie_area = 0;
-    area_info area;
-    while (B_OK == get_next_area_info(team.team, &cookie_area, &area)) {
-      info.memory += area.ram_size;
     }
     
     if (!gathered.put(request.pid, std::move(info))) {
