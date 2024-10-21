@@ -5,22 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/ProcInfo.h"
-#include "mozilla/ProcInfo_linux.h"
-#include "mozilla/Sprintf.h"
-#include "mozilla/Logging.h"
-#include "mozilla/ScopeExit.h"
-#include "mozilla/ipc/GeckoChildProcessHost.h"
-#include "nsMemoryReporterManager.h"
-#include "nsWhitespaceTokenizer.h"
-
-#include <cstdio>
-#include <cstring>
-#include <unistd.h>
-#include <dirent.h>
 
 #include <kernel/OS.h>
-
-#define NANOPERSEC 1000000000.
 
 namespace mozilla {
 
