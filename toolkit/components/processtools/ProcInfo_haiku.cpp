@@ -27,12 +27,11 @@ namespace mozilla {
 int GetCycleTimeFrequencyMHz() { return 0; }
 
 nsresult GetCpuTimeSinceProcessStartInMs(uint64_t* aResult) {
-  const thread_id thread = find_thread(NULL);
-  thread_info info;
-  if (B_OK != get_thread_info(thread, &info)) {
+  team_usage_info usage;
+  if (B_OK != get_team_usage_info(B_CURRENT_TEAM, B_TEAM_USAGE_SELF, &usage)) {
     return NS_ERROR_FAILURE;
   }
-  const bigtime_t microseconds = info.user_time + info.kernel_time;
+  const bigtime_t microseconds = usage.user_time + usage.kernel_time;
   *aResult = microseconds / 1000;
   return NS_OK;
 }
@@ -69,12 +68,12 @@ ProcInfoPromise::ResolveOrRejectValue GetProcInfoSync(
     thread_info thread;
     while (B_OK == get_next_thread_info(team.team, &cookie_thread, &thread)) {
       const bigtime_t microseconds = thread.user_time + thread.kernel_time;
-      const uint64_t  cpuTime      = microseconds / 1000;
-      info.cpuTime = std::max(info.cpuTime, cpuTime);
+      const uint64_t  nanoseconds  = microseconds * 1000;
+      info.cpuTime = std::max(info.cpuTime, nanoseconds);
       
       ThreadInfo threadInfo;
       threadInfo.tid = thread.thread;
-      threadInfo.cpuTime = cpuTime;
+      threadInfo.cpuTime = nanoseconds;
       info.threads.AppendElement(threadInfo);
     }
     
@@ -82,7 +81,7 @@ ProcInfoPromise::ResolveOrRejectValue GetProcInfoSync(
     ssize_t cookie_area = 0;
     area_info area;
     while (B_OK == get_next_area_info(team.team, &cookie_area, &area)) {
-      info.memory += area.size;
+      info.memory += area.ram_size;
     }
     
     if (!gathered.put(request.pid, std::move(info))) {
