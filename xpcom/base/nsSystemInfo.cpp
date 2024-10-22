@@ -80,6 +80,10 @@
 #  include "mozilla/SandboxInfo.h"
 #endif
 
+#ifdef XP_HAIKU
+#  include <kernel/OS.h>
+#endif
+
 // Slot for NS_InitXPCOM to pass information to nsSystemInfo::Init.
 // Only set to nonzero (potentially) if XP_UNIX.  On such systems, the
 // system call to discover the appropriate value is not thread-safe,
@@ -1355,7 +1359,15 @@ nsresult nsSystemInfo::Init() {
   SetInt32Property(u"pagesize"_ns, PR_GetPageSize());
   SetInt32Property(u"pageshift"_ns, PR_GetPageShift());
   SetInt32Property(u"memmapalign"_ns, PR_GetMemMapAlignment());
+#ifdef XP_HAIKU
+  { // workaround
+    system_info info;
+    get_system_info(&info);
+    SetUint64Property(u"memsize"_ns, info.max_pages * B_PAGE_SIZE);
+  }
+#else
   SetUint64Property(u"memsize"_ns, PR_GetPhysicalMemorySize());
+#endif
   SetUint32Property(u"umask"_ns, nsSystemInfo::gUserUmask);
 
 #ifdef HAVE_64BIT_BUILD
