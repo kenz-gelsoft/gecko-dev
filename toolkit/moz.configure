@@ -217,6 +217,8 @@ def audio_backends_default(target):
         return ("sndio",)
     elif target.kernel == "Darwin":
         return ("audiounit",)
+    elif target.os == "Haiku":
+        return ("haiku",)
     elif target.os == "NetBSD":
         return ("sunaudio",)
     elif target.os == "SunOS":
@@ -234,6 +236,7 @@ option(
         "aaudio",
         "alsa",
         "audiounit",
+        "haiku",
         "jack",
         "opensl",
         "oss",
@@ -270,6 +273,11 @@ def imply_audiounit(values, target):
     if any("audiounit" in value for value in values) and target.kernel != "Darwin":
         die("Cannot enable AudioUnit on %s", target.os)
     return any("audiounit" in value for value in values) or None
+
+
+@depends("--enable-audio-backends")
+def imply_haiku(values):
+    return any("haiku" in value for value in values) or None
 
 
 @depends("--enable-audio-backends")
@@ -334,6 +342,8 @@ imply_option(
 )
 
 set_config("MOZ_AUDIOUNIT_RUST", imply_audiounit, when="--enable-audio-backends")
+
+set_config("MOZ_HAIKU", imply_haiku, when="--enable-audio-backends")
 
 imply_option(
     "--enable-jack", imply_jack, reason="--enable-audio-backends", when=use_pkg_config
