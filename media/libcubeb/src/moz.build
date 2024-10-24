@@ -102,12 +102,22 @@ if CONFIG['MOZ_OPENSL']:
     SOURCES += ['cubeb_opensl.cpp']
     DEFINES['USE_OPENSL'] = True
 
+if CONFIG['MOZ_HAIKU']:
+    SOURCES += [
+        'cubeb_haiku.cpp',
+    ]
+    DEFINES['USE_HAIKU'] = True
+    OS_LIBS += [
+        'media',
+    ]
+
 FINAL_LIBRARY = 'xul'
 
 if CONFIG['MOZ_ALSA']:
     CFLAGS += CONFIG['MOZ_ALSA_CFLAGS']
 
 CFLAGS += CONFIG['MOZ_JACK_CFLAGS']
+CFLAGS += CONFIG['MOZ_HAIKU_CFLAGS']
 CFLAGS += CONFIG['MOZ_PULSEAUDIO_CFLAGS']
 
 # We allow warnings for third-party code that can be updated from upstream.
