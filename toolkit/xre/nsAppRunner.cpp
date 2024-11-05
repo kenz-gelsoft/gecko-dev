@@ -440,9 +440,6 @@ static void UnexpectedExit() {
 
 #if defined(MOZ_WAYLAND)
 bool IsWaylandEnabled() {
-#ifdef XP_HAIKU
-  return true;
-#else
   static bool isWaylandEnabled = []() {
     const char* waylandDisplay = PR_GetEnv("WAYLAND_DISPLAY");
     if (!waylandDisplay) {
@@ -473,7 +470,6 @@ bool IsWaylandEnabled() {
     return !gtk_check_version(3, 24, 30);
   }();
   return isWaylandEnabled;
-#endif // !XP_HAIKU
 }
 #else
 bool IsWaylandEnabled() { return false; }
