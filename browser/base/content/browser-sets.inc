@@ -6,6 +6,12 @@
 #ifdef XP_UNIX
 #ifndef XP_MACOSX
 #define XP_GNOME 1
+
+#ifdef XP_HAIKU
+#define XP_MACOSX_OR_HAIKU 1
+#endif
+#else
+#define XP_MACOSX_OR_HAIKU 1
 #endif
 #endif
 
@@ -196,7 +202,7 @@
 
     <key keycode="VK_BACK" command="cmd_handleBackspace" reserved="false"/>
     <key keycode="VK_BACK" command="cmd_handleShiftBackspace" modifiers="shift" reserved="false"/>
-#ifndef XP_MACOSX
+#ifndef XP_MACOSX_OR_HAIKU
     <key id="goBackKb"  keycode="VK_LEFT" command="Browser:Back" modifiers="alt"/>
     <key id="goForwardKb"  keycode="VK_RIGHT" command="Browser:Forward" modifiers="alt"/>
 #else
