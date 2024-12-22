@@ -15,7 +15,9 @@
 
 #ifdef XP_UNIX
   #ifndef XP_MACOSX
-    #define UNIX_BUT_NOT_MAC
+    #ifndef XP_HAIKU
+      #define UNIX_BUT_NOT_MAC_NOR_HAIKU
+    #endif
   #endif
 #endif
 
@@ -253,7 +255,7 @@ pref("browser.fixup.domainsuffixwhitelist.local", true);
 // search string, that may contain a valid host, to a search engine.
 pref("browser.fixup.dns_first_for_single_words", false);
 
-#ifdef UNIX_BUT_NOT_MAC
+#ifdef UNIX_BUT_NOT_MAC_NOR_HAIKU
   pref("general.autoScroll", false);
 #else
   pref("general.autoScroll", true);
@@ -973,7 +975,7 @@ pref("security.allow_parent_unrestricted_js_loads", false);
 pref("browser.tabs.min_inactive_duration_before_unload", 600000);
 
 // Does middleclick paste of clipboard to new tab button
-#ifdef UNIX_BUT_NOT_MAC
+#ifdef UNIX_BUT_NOT_MAC_NOR_HAIKU
 pref("browser.tabs.searchclipboardfor.middleclick", true);
 #else
 pref("browser.tabs.searchclipboardfor.middleclick", false);
