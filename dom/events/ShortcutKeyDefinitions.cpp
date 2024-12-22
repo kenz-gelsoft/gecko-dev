@@ -435,13 +435,13 @@ ShortcutKeyData ShortcutKeys::sBrowserHandlers[] = {
     {u"keypress", u"VK_LEFT",  nullptr, u"control,shift", u"cmd_selectWordPrevious"},  // Android, Emacs
     {u"keypress", u"VK_RIGHT", nullptr, u"control,shift", u"cmd_selectWordNext"},      // Android, Emacs
 #endif  // MOZ_WIDGET_ANDROID || USE_EMACS_KEY_BINDINGS
-#if defined(XP_WIN) || defined(MOZ_WIDGET_GTK)
+#if defined(XP_WIN) || (defined(MOZ_WIDGET_GTK) && !defined(XP_HAIKU))
     {u"keypress", u"VK_LEFT",  nullptr, u"control",       u"cmd_moveLeft2"},           // Win, Linux
     {u"keypress", u"VK_RIGHT", nullptr, u"control",       u"cmd_moveRight2"},          // Win, Linux
     {u"keypress", u"VK_LEFT",  nullptr, u"control,shift", u"cmd_selectLeft2"},         // Win, Linux
     {u"keypress", u"VK_RIGHT", nullptr, u"control,shift", u"cmd_selectRight2"},        // Win, Linux
 #endif  // XP_WIN || MOZ_WIDGET_GTK
-#if defined(MOZ_WIDGET_COCOA)
+#if defined(MOZ_WIDGET_COCOA) || defined(XP_HAIKU)
     {u"keypress", u"VK_LEFT",  nullptr, u"alt",           u"cmd_moveLeft2"},           // macOS
     {u"keypress", u"VK_RIGHT", nullptr, u"alt",           u"cmd_moveRight2"},          // macOS
     {u"keypress", u"VK_LEFT",  nullptr, u"alt,shift",     u"cmd_selectLeft2"},         // macOS
