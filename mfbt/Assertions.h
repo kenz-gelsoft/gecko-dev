@@ -50,7 +50,8 @@ MOZ_BEGIN_EXTERN_C
 extern MFBT_DATA const char* gMozCrashReason;
 MOZ_END_EXTERN_C
 
-#if defined(__HAIKU__)
+#if defined(MOZ_HAS_MOZGLUE) || defined(MOZILLA_INTERNAL_API)
+#  if defined(__HAIKU__)
 /*
  * We introduce a function prototype here as including Haiku specific header
  * from this globally included header will cause too many conflicts.
@@ -64,7 +65,7 @@ MOZ_END_EXTERN_C
 
 #  define MOZ_CRASH_ANNOTATE(...) debugger(__VA_ARGS__)
 
-#elif defined(MOZ_HAS_MOZGLUE) || defined(MOZILLA_INTERNAL_API)
+#  else
 static inline void AnnotateMozCrashReason(const char* reason) {
   gMozCrashReason = reason;
   // See bug 1681846, on 32-bit Android ARM the compiler removes the store to
@@ -72,6 +73,8 @@ static inline void AnnotateMozCrashReason(const char* reason) {
   asm volatile("" ::: "memory");
 }
 #  define MOZ_CRASH_ANNOTATE(...) AnnotateMozCrashReason(__VA_ARGS__)
+
+#  endif
 #else
 #  define MOZ_CRASH_ANNOTATE(...) \
     do { /* nothing */            \
