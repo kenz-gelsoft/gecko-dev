@@ -334,7 +334,11 @@
     <key id="key_undoCloseWindow" command="History:UndoCloseWindow" data-l10n-id="window-new-shortcut" modifiers="accel,shift"/>
 
 #ifdef XP_GNOME
+#ifndef XP_HAIKU
 #define NUM_SELECT_TAB_MODIFIER alt
+#else
+#define NUM_SELECT_TAB_MODIFIER accel
+#endif
 #else
 #define NUM_SELECT_TAB_MODIFIER accel
 #endif
