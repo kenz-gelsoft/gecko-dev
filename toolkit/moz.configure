@@ -2950,6 +2950,7 @@ def forkserver_default(target, build_project):
         (target.os == "GNU" and target.kernel == "Linux")
         or target.os == "FreeBSD"
         or target.os == "OpenBSD"
+        or target.os == "Haiku"
     )
 
 
