@@ -303,8 +303,6 @@ def convert_entry_flags_to_platform_codes(flags):
                 ret.append("linux")
             elif value[1] == "Darwin":
                 ret.append("macosx")
-            elif value[1] == "Haiku":
-                ret.append("haiku")
             elif value[1] == "WINNT":
                 ret.append("win")
             else:

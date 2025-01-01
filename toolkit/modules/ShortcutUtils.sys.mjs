@@ -62,13 +62,8 @@ export var ShortcutUtils = {
 
     let elemString = "";
     let haveCloverLeaf = false;
-    if (elemMod.match("shift") && Services.appinfo.OS == "Haiku") {
-      elemString +=
-        lazy.PlatformKeys.GetStringFromName("VK_SHIFT") +
-        lazy.PlatformKeys.GetStringFromName("MODIFIER_SEPARATOR");
-    }
     if (elemMod.match("accel")) {
-      if (Services.appinfo.OS == "Darwin") {
+      if (Services.appinfo.OS == "Darwin" || Services.appinfo.OS == "Haiku") {
         haveCloverLeaf = true;
       } else {
         elemString +=
@@ -77,7 +72,7 @@ export var ShortcutUtils = {
       }
     }
     if (elemMod.match("access")) {
-      if (Services.appinfo.OS == "Darwin") {
+      if (Services.appinfo.OS == "Darwin" || Services.appinfo.OS == "Haiku") {
         elemString +=
           lazy.PlatformKeys.GetStringFromName("VK_CONTROL") +
           lazy.PlatformKeys.GetStringFromName("MODIFIER_SEPARATOR");
@@ -92,20 +87,32 @@ export var ShortcutUtils = {
         lazy.PlatformKeys.GetStringFromName("VK_COMMAND_OR_WIN") +
         lazy.PlatformKeys.GetStringFromName("MODIFIER_SEPARATOR");
     }
-    if (elemMod.match("shift") && Services.appinfo.OS != "Haiku") {
+    if (elemMod.match("shift")) {
       elemString +=
         lazy.PlatformKeys.GetStringFromName("VK_SHIFT") +
         lazy.PlatformKeys.GetStringFromName("MODIFIER_SEPARATOR");
     }
     if (elemMod.match("alt")) {
-      elemString +=
-        lazy.PlatformKeys.GetStringFromName("VK_ALT") +
-        lazy.PlatformKeys.GetStringFromName("MODIFIER_SEPARATOR");
+      if (Services.appinfo.OS == "Haiku") {
+        elemString +=
+          lazy.PlatformKeys.GetStringFromName("VK_CONTROL") +
+          lazy.PlatformKeys.GetStringFromName("MODIFIER_SEPARATOR");
+      } else {
+        elemString +=
+          lazy.PlatformKeys.GetStringFromName("VK_ALT") +
+          lazy.PlatformKeys.GetStringFromName("MODIFIER_SEPARATOR");
+      }
     }
     if (elemMod.match("ctrl") || elemMod.match("control")) {
-      elemString +=
-        lazy.PlatformKeys.GetStringFromName("VK_CONTROL") +
-        lazy.PlatformKeys.GetStringFromName("MODIFIER_SEPARATOR");
+      if (Services.appinfo.OS == "Haiku") {
+        elemString +=
+          lazy.PlatformKeys.GetStringFromName("VK_ALT") +
+          lazy.PlatformKeys.GetStringFromName("MODIFIER_SEPARATOR");
+      } else {
+        elemString +=
+          lazy.PlatformKeys.GetStringFromName("VK_CONTROL") +
+          lazy.PlatformKeys.GetStringFromName("MODIFIER_SEPARATOR");
+      }
     }
     if (elemMod.match("meta") && this.metaKeyIsCommandKey()) {
       elemString +=
@@ -114,9 +121,15 @@ export var ShortcutUtils = {
     }
 
     if (haveCloverLeaf) {
-      elemString +=
-        lazy.PlatformKeys.GetStringFromName("VK_COMMAND_OR_WIN") +
-        lazy.PlatformKeys.GetStringFromName("MODIFIER_SEPARATOR");
+      if (Services.appinfo.OS == "Haiku") {
+        elemString +=
+          lazy.PlatformKeys.GetStringFromName("VK_ALT") +
+          lazy.PlatformKeys.GetStringFromName("MODIFIER_SEPARATOR");
+      } else {
+        elemString +=
+          lazy.PlatformKeys.GetStringFromName("VK_COMMAND_OR_WIN") +
+          lazy.PlatformKeys.GetStringFromName("MODIFIER_SEPARATOR");
+      }
     }
 
     return elemString;
