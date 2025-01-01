@@ -62,11 +62,6 @@ export var ShortcutUtils = {
 
     let elemString = "";
     let haveCloverLeaf = false;
-    if (elemMod.match("shift") && Services.appinfo.OS == "Haiku") {
-      elemString +=
-        lazy.PlatformKeys.GetStringFromName("VK_SHIFT") +
-        lazy.PlatformKeys.GetStringFromName("MODIFIER_SEPARATOR");
-    }
     if (elemMod.match("accel")) {
       if (Services.appinfo.OS == "Darwin") {
         haveCloverLeaf = true;
@@ -92,7 +87,7 @@ export var ShortcutUtils = {
         lazy.PlatformKeys.GetStringFromName("VK_COMMAND_OR_WIN") +
         lazy.PlatformKeys.GetStringFromName("MODIFIER_SEPARATOR");
     }
-    if (elemMod.match("shift") && Services.appinfo.OS != "Haiku") {
+    if (elemMod.match("shift")) {
       elemString +=
         lazy.PlatformKeys.GetStringFromName("VK_SHIFT") +
         lazy.PlatformKeys.GetStringFromName("MODIFIER_SEPARATOR");
